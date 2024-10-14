@@ -1,10 +1,10 @@
 #include "audiobuffer.h"
 #include <sndfile.h>
-#include <qassert.h> // TODO: temp
-#include <qlogging.h>
 #include <stdint.h>
 #include <algorithm>
 #include <QFileInfo>
+#include <QtGlobal>
+#include <qlogging.h>
 
 AudioBuffer::AudioBuffer() {}
 

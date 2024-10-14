@@ -9,7 +9,9 @@ set(CMAKE_AUTOUIC ON)
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
 
-find_package(Qt6 6.5.0 REQUIRED COMPONENTS Widgets)
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake")
+
+find_package(Qt6 REQUIRED COMPONENTS Widgets)
 find_package(SndFile REQUIRED)
 
 add_executable(AudioEditor
@@ -28,4 +30,4 @@ add_executable(AudioEditor
     src/gui/mainwindow.ui
 )
 
-target_link_libraries(AudioEditor PRIVATE Qt::Widgets SndFile::sndfile)
+target_link_libraries(AudioEditor PRIVATE Qt::Widgets ${SNDFILE_LIBRARY})
