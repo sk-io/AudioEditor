@@ -14,6 +14,7 @@ list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake")
 find_package(Qt6 REQUIRED COMPONENTS Widgets)
 find_package(SndFile REQUIRED)
 
+
 add_executable(AudioEditor
     # sources
     src/main.cpp
@@ -30,4 +31,5 @@ add_executable(AudioEditor
     src/gui/mainwindow.ui
 )
 
+target_include_directories(AudioEditor PRIVATE ${SNDFILE_INCLUDE_DIR})
 target_link_libraries(AudioEditor PRIVATE Qt::Widgets ${SNDFILE_LIBRARY})
