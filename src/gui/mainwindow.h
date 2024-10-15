@@ -30,10 +30,9 @@ private slots:
     void on_actionCopy_triggered();
     void on_actionPaste_triggered();
     void on_actionCut_triggered();
-
     void on_actionUndo_triggered();
-
     void on_actionRedo_triggered();
+    void on_actionTrim_triggered();
 
 private:
     enum class Action {
@@ -41,6 +40,7 @@ private:
         COPY,
         CUT,
         PASTE,
+        TRIM,
     };
 
     Ui::MainWindow* ui;

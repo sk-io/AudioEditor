@@ -144,6 +144,7 @@ bool AudioBuffer::copy_region(int64_t start, int64_t end, AudioBuffer& to) const
 
     to.init(m_num_channels, m_sample_rate);
     to.m_samples.insert(to.m_samples.begin(), m_samples.begin() + start, m_samples.begin() + end);
+    to.on_length_changed();
     return true;
 }
 

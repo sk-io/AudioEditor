@@ -12,6 +12,12 @@ AudioWidget::AudioWidget(QWidget* parent) : QWidget{parent} {
     setAutoFillBackground(true);
 }
 
+void AudioWidget::deselect() {
+    m_selection_state = SelectionState::DESELECTED;
+    state = State::IDLE;
+    setCursor(Qt::ArrowCursor);
+}
+
 void AudioWidget::paintEvent(QPaintEvent* event) {
     QPainter painter(this);
     painter.fillRect(rect(), Qt::black);
@@ -105,10 +111,10 @@ bool AudioWidget::event(QEvent* event) {
                     state = State::RESIZE_REGION_HOVER;
                     m_resizing_a = false;
                 }
-
-                setCursor(state == State::IDLE ? Qt::ArrowCursor : Qt::SizeHorCursor);
             }
         }
+
+        setCursor(state == State::RESIZE_REGION || state == State::RESIZE_REGION_HOVER ? Qt::SizeHorCursor : Qt::ArrowCursor);
 
         the_app.main_window->update_status_bar();
         return true;

@@ -38,8 +38,8 @@ void MainWindow::on_actionNew_triggered() {
     the_app.file_path = "";
     the_app.unsaved_changes = false;
     update_status_bar();
-    m_audio_widget->repaint();
     update_title();
+    m_audio_widget->repaint();
 }
 
 void MainWindow::on_actionOpen_triggered() {
@@ -52,8 +52,11 @@ void MainWindow::on_actionOpen_triggered() {
     the_app.file_path = path;
     the_app.last_dir = info.dir().path();
     the_app.unsaved_changes = false;
+
     update_status_bar();
     update_title();
+    m_audio_widget->deselect();
+    m_audio_widget->repaint();
 }
 
 void MainWindow::on_actionSave_triggered() {
@@ -96,6 +99,21 @@ void MainWindow::on_actionCut_triggered() {
     perform_action(Action::CUT);
 }
 
+void MainWindow::on_actionUndo_triggered() {
+    undo_state();
+
+    update_title();
+    m_audio_widget->repaint();
+}
+
+void MainWindow::on_actionRedo_triggered() {
+    Q_ASSERT(false);
+}
+
+void MainWindow::on_actionTrim_triggered() {
+    perform_action(Action::TRIM);
+}
+
 void MainWindow::update_title() {
     QString file_name;
     if (the_app.file_path == "") {
@@ -121,7 +139,7 @@ void MainWindow::perform_action(Action action) {
             break;
         save_state();
         the_app.buffer.delete_region(start, end);
-        m_audio_widget->m_selection_state = AudioWidget::SelectionState::DESELECTED;
+        m_audio_widget->deselect();
         the_app.unsaved_changes = true;
         break;
     case Action::COPY:
@@ -139,32 +157,32 @@ void MainWindow::perform_action(Action action) {
             the_app.buffer.delete_region(start, end);
             the_app.buffer.paste_from(start, the_app.clipboard);
             the_app.unsaved_changes = true;
-            m_audio_widget->m_selection_state = AudioWidget::SelectionState::DESELECTED;
+            m_audio_widget->deselect();
         }
         break;
     case Action::CUT:
         if (m_audio_widget->m_selection_state != AudioWidget::SelectionState::REGION)
             break;
-        m_audio_widget->m_selection_state = AudioWidget::SelectionState::DESELECTED;
+        m_audio_widget->deselect();
         save_state();
         the_app.buffer.cut_region(start, end, the_app.clipboard);
         the_app.unsaved_changes = true;
         break;
+    case Action::TRIM: {
+        if (m_audio_widget->m_selection_state != AudioWidget::SelectionState::REGION)
+            break;
+        m_audio_widget->deselect();
+        save_state();
+        AudioBuffer temp;
+        the_app.buffer.copy_region(start, end, temp);
+        the_app.buffer = std::move(temp);
+        the_app.unsaved_changes = true;
+        break;
+    }
     default:
         Q_ASSERT(false);
     }
 
     update_title();
     m_audio_widget->repaint();
-}
-
-void MainWindow::on_actionUndo_triggered() {
-    undo_state();
-
-    update_title();
-    m_audio_widget->repaint();
-}
-
-void MainWindow::on_actionRedo_triggered() {
-    Q_ASSERT(false);
 }

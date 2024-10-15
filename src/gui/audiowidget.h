@@ -9,6 +9,7 @@ public:
     explicit AudioWidget(QWidget *parent = nullptr);
 
     double get_mouse_pos() const { return m_mouse_pos; }
+    void deselect();
 
 signals:
 private:
