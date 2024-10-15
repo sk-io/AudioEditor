@@ -33,6 +33,8 @@ private slots:
     void on_actionUndo_triggered();
     void on_actionRedo_triggered();
     void on_actionTrim_triggered();
+    void on_actionDeselect_triggered();
+    void on_actionSelect_All_triggered();
 
 private:
     enum class Action {

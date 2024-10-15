@@ -13,13 +13,10 @@ audio playback/recording
 
 === secondary importance ===
 join samples with lines when zoomed in
-you shouldnt be able to select anywhere before time=0
 profile and optimize high CPU usage
     optimize waveform rendering, cache waveform peaks for current zoom level
 drag and drop
-deselect
 snap to beats, seconds, 10ths etc.
-trim selection
 cues, loop points
 icons
 incremental undo
@@ -28,4 +25,4 @@ switch view between single, split view, spectrogram
 
 === bugs ===
 crash when pasting outside file bounds
-when undoing/redoing, it thinks there are still unsaved changes
+when undoing/redoing, it thinks there are still unsaved changes when there arent

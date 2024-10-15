@@ -12,6 +12,13 @@ AudioWidget::AudioWidget(QWidget* parent) : QWidget{parent} {
     setAutoFillBackground(true);
 }
 
+void AudioWidget::select(double start, double end) {
+    m_selection_pos_a = start;
+    m_selection_pos_b = end;
+    m_selection_state = start == end ? AudioWidget::SelectionState::MARKER : AudioWidget::SelectionState::REGION;
+    state = State::IDLE;
+}
+
 void AudioWidget::deselect() {
     m_selection_state = SelectionState::DESELECTED;
     state = State::IDLE;
@@ -32,15 +39,6 @@ void AudioWidget::paintEvent(QPaintEvent* event) {
         int w = x1 - x0 + 1;
 
         painter.fillRect(x0, rect().top(), w, rect().height(), Qt::darkBlue);
-    } else if (m_selection_state == SelectionState::MARKER) {
-        int x = project_x(m_selection_pos_a);
-        painter.setPen(Qt::darkRed);
-        painter.drawLine(x, rect().top(), x, rect().bottom());
-    }
-
-    {
-        painter.setPen(Qt::lightGray);
-        painter.drawLine(rect().left(), rect().center().y(), rect().right(), rect().center().y());
     }
 
     // draw start line
@@ -48,6 +46,18 @@ void AudioWidget::paintEvent(QPaintEvent* event) {
         int x = (int) ((0 - m_scroll_pos) * m_pixels_per_second);
         painter.setPen(Qt::darkGray);
         painter.drawLine(rect().left() + x, rect().top(), rect().left() + x, rect().bottom());
+    }
+
+    if (m_selection_state == SelectionState::MARKER) {
+        int x = project_x(m_selection_pos_a);
+        painter.setPen(Qt::darkRed);
+        painter.drawLine(x, rect().top(), x, rect().bottom());
+    }
+
+    // center line
+    {
+        painter.setPen(Qt::lightGray);
+        painter.drawLine(rect().left(), rect().center().y(), rect().right(), rect().center().y());
     }
 
     const AudioBuffer& buffer = the_app.buffer;
@@ -83,6 +93,7 @@ bool AudioWidget::event(QEvent* event) {
 
         m_mouse_x = mouse->pos().x() - rect().left();
         m_mouse_pos = m_scroll_pos + m_mouse_x / m_pixels_per_second;
+        m_mouse_pos = std::max(m_mouse_pos, 0.0);
 
         if (state == State::SCROLLING) {
             m_scroll_pos = m_drag_start_scroll_pos - (m_mouse_x - m_drag_start_mouse_x) / m_pixels_per_second;
