@@ -10,6 +10,10 @@ show timeline in seconds/beats
 implement redo
 audio playback/recording
     portaudio?
+config file
+    recently opened files
+    last dir
+    settings
 
 === secondary importance ===
 join samples with lines when zoomed in
@@ -18,10 +22,18 @@ profile and optimize high CPU usage
 drag and drop
 snap to beats, seconds, 10ths etc.
 cues, loop points
+checkbox to toggle whether or not to shift audio when cutting/deleting
+    call it "Shift"?
 icons
 incremental undo
 duplicate selection
 switch view between single, split view, spectrogram
+effects/tools
+    amplify
+    fade in/out
+    insert silence
+save selection state for undo/redo
+confirm exit when there are unsaved changes or when opening a file
 
 === bugs ===
 crash when pasting outside file bounds
