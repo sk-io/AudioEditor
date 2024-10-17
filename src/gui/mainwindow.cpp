@@ -196,3 +196,7 @@ void MainWindow::on_actionSelect_All_triggered() {
     m_audio_widget->select(0, the_app.buffer.get_duration());
     m_audio_widget->repaint();
 }
+
+void MainWindow::on_actionPlay_triggered() {
+    test_play_audio();
+}

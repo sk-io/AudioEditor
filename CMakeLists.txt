@@ -29,15 +29,9 @@ add_executable(AudioEditor
     src/gui/mainwindow.ui
 )
 
-target_include_directories(AudioEditor
-	PRIVATE
-		${SNDFILE_INCLUDE_DIRS}
-		${PORTAUDIO_INCLUDE_DIRS}
-)
-
 target_link_libraries(AudioEditor
 	PRIVATE
 		Qt::Widgets
-		${SNDFILE_LIBRARIES}
-		${PORTAUDIO_LIBRARIES}
+		SndFile::sndfile
+		portaudio
 )

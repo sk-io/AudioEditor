@@ -28,7 +28,7 @@ private:
         REGION,
     };
 
-    State state = State::IDLE;
+    State m_state = State::IDLE;
     double m_scroll_pos = 0; // at left side, in seconds
     int m_mouse_x = 0; // relative to this widget
     double m_mouse_pos = 0;

@@ -26,6 +26,15 @@ public:
     int get_sample_rate() const { return m_sample_rate; }
     double get_duration() const { return m_total_duration; }
     int64_t get_sample_index(double time) const { return (int64_t) (time * m_sample_rate); }
+    bool is_stereo() const { return m_num_channels == 2; };
+
+    float* get_raw_pointer() {
+        return m_samples.size() == 0 ? nullptr : &m_samples[0];
+    }
+
+    const std::vector<float>& get_samples() const {
+        return m_samples;
+    }
 
 private:
     std::vector<float> m_samples; // stereo has 2 floats per sample, interleaved

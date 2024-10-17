@@ -16,12 +16,12 @@ void AudioWidget::select(double start, double end) {
     m_selection_pos_a = start;
     m_selection_pos_b = end;
     m_selection_state = start == end ? AudioWidget::SelectionState::MARKER : AudioWidget::SelectionState::REGION;
-    state = State::IDLE;
+    m_state = State::IDLE;
 }
 
 void AudioWidget::deselect() {
     m_selection_state = SelectionState::DESELECTED;
-    state = State::IDLE;
+    m_state = State::IDLE;
     setCursor(Qt::ArrowCursor);
 }
 
@@ -95,13 +95,13 @@ bool AudioWidget::event(QEvent* event) {
         m_mouse_pos = m_scroll_pos + m_mouse_x / m_pixels_per_second;
         m_mouse_pos = std::max(m_mouse_pos, 0.0);
 
-        if (state == State::SCROLLING) {
+        if (m_state == State::SCROLLING) {
             m_scroll_pos = m_drag_start_scroll_pos - (m_mouse_x - m_drag_start_mouse_x) / m_pixels_per_second;
             repaint();
-        } else if (state == State::SELECTING) {
+        } else if (m_state == State::SELECTING) {
             m_selection_pos_b = m_mouse_pos;
             repaint();
-        } else if (state == State::RESIZE_REGION) {
+        } else if (m_state == State::RESIZE_REGION) {
             if (m_resizing_a)
                 m_selection_pos_a = m_mouse_pos;
             else
@@ -114,18 +114,18 @@ bool AudioWidget::event(QEvent* event) {
 
                 const int GRAB_WIDTH = 3;
 
-                state = State::IDLE;
+                m_state = State::IDLE;
                 if (abs(select_a - m_mouse_x) < GRAB_WIDTH) {
-                    state = State::RESIZE_REGION_HOVER;
+                    m_state = State::RESIZE_REGION_HOVER;
                     m_resizing_a = true;
                 } else if (abs(select_b - m_mouse_x) < GRAB_WIDTH) {
-                    state = State::RESIZE_REGION_HOVER;
+                    m_state = State::RESIZE_REGION_HOVER;
                     m_resizing_a = false;
                 }
             }
         }
 
-        setCursor(state == State::RESIZE_REGION || state == State::RESIZE_REGION_HOVER ? Qt::SizeHorCursor : Qt::ArrowCursor);
+        setCursor(m_state == State::RESIZE_REGION || m_state == State::RESIZE_REGION_HOVER ? Qt::SizeHorCursor : Qt::ArrowCursor);
 
         the_app.main_window->update_status_bar();
         return true;
@@ -135,19 +135,19 @@ bool AudioWidget::event(QEvent* event) {
         bool pressed = event->type() == QEvent::MouseButtonPress;
         QMouseEvent* mouse = (QMouseEvent*) event;
 
-        if (mouse->button() == Qt::RightButton && pressed && state == State::IDLE) {
-            state = State::SCROLLING;
+        if (mouse->button() == Qt::RightButton && pressed && m_state == State::IDLE) {
+            m_state = State::SCROLLING;
             m_drag_start_scroll_pos = m_scroll_pos;
             m_drag_start_mouse_x = mouse->pos().x() - rect().left();
-        } else if (mouse->button() == Qt::RightButton && !pressed && state == State::SCROLLING) {
-            state = State::IDLE;
-        } else if (mouse->button() == Qt::LeftButton && pressed && state == State::IDLE) {
-            state = State::SELECTING;
+        } else if (mouse->button() == Qt::RightButton && !pressed && m_state == State::SCROLLING) {
+            m_state = State::IDLE;
+        } else if (mouse->button() == Qt::LeftButton && pressed && m_state == State::IDLE) {
+            m_state = State::SELECTING;
             m_selection_state = SelectionState::REGION;
             m_selection_pos_a = m_mouse_pos;
             m_selection_pos_b = m_mouse_pos;
-        } else if (mouse->button() == Qt::LeftButton && !pressed && state == State::SELECTING) {
-            state = State::IDLE;
+        } else if (mouse->button() == Qt::LeftButton && !pressed && m_state == State::SELECTING) {
+            m_state = State::IDLE;
 
             int ax = project_x(m_selection_pos_a);
             int bx = project_x(m_selection_pos_b);
@@ -158,10 +158,10 @@ bool AudioWidget::event(QEvent* event) {
             } else {
                 m_selection_state = SelectionState::REGION;
             }
-        } else if (mouse->button() == Qt::LeftButton && pressed && state == State::RESIZE_REGION_HOVER) {
-            state = State::RESIZE_REGION;
-        } else if (mouse->button() == Qt::LeftButton && !pressed && state == State::RESIZE_REGION) {
-            state = State::IDLE;
+        } else if (mouse->button() == Qt::LeftButton && pressed && m_state == State::RESIZE_REGION_HOVER) {
+            m_state = State::RESIZE_REGION;
+        } else if (mouse->button() == Qt::LeftButton && !pressed && m_state == State::RESIZE_REGION) {
+            m_state = State::IDLE;
             //setCursor(Qt::ArrowCursor);
         }
 
@@ -172,7 +172,7 @@ bool AudioWidget::event(QEvent* event) {
     if (event->type() == QEvent::Wheel) {
         QWheelEvent* wheel = (QWheelEvent*) event;
 
-        if (state != State::IDLE && state != State::RESIZE_REGION_HOVER)
+        if (m_state != State::IDLE && m_state != State::RESIZE_REGION_HOVER)
             return true;
 
         double old_scroll_pos = m_scroll_pos;
