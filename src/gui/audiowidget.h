@@ -28,6 +28,12 @@ private:
         REGION,
     };
 
+    void paintEvent(QPaintEvent *event);
+    bool event(QEvent *event);
+    int project_x(double time);
+    int project_y(float amplitude);
+
+private:
     State m_state = State::IDLE;
     double m_scroll_pos = 0; // at left side, in seconds
     int m_mouse_x = 0; // relative to this widget
@@ -39,11 +45,6 @@ private:
     double m_selection_pos_b = 0;
     SelectionState m_selection_state = SelectionState::DESELECTED;
     bool m_resizing_a = true; // true for a, false for b
-
-    void paintEvent(QPaintEvent *event);
-    bool event(QEvent *event);
-    int project_x(double time);
-    int project_y(float amplitude);
 
     friend class MainWindow;
 };

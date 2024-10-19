@@ -20,6 +20,8 @@ add_executable(AudioEditor
     src/app.cpp
     src/audiobuffer.h
     src/audiobuffer.cpp
+    src/audiointerface.h
+    src/audiointerface.cpp
     src/gui/mainwindow.cpp
     src/gui/mainwindow.h
     src/gui/audiowidget.h

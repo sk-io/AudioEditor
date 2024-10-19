@@ -81,7 +81,7 @@ void AudioBuffer::save_to_file(const QString& path) {
     SNDFILE* file = sf_open(path_str.c_str(), SFM_WRITE, &info);
     Q_ASSERT(file);
 
-    if (m_num_samples > 0) {
+    if (m_num_frames > 0) {
         sf_count_t num_written = sf_write_float(file, &m_samples[0], m_samples.size());
         Q_ASSERT(num_written == m_samples.size());
     }
@@ -94,15 +94,15 @@ void AudioBuffer::sample_amplitude(int channel, double start_time, double durati
     Q_ASSERT(m_sample_rate > 0);
     Q_ASSERT(m_num_channels > 0);
 
-    int64_t sample_start = start_time * m_sample_rate;
-    int64_t num_samples = duration * (double) m_sample_rate;
+    uint64_t sample_start = start_time * m_sample_rate;
+    uint64_t num_samples = duration * (double) m_sample_rate;
 
     if (num_samples <= 0)
         num_samples = 1;
 
     float max = -2, min = 2;
-    for (int64_t i = sample_start; i < sample_start + num_samples; i++) {
-        int64_t index = i * m_num_channels + channel;
+    for (uint64_t i = sample_start; i < sample_start + num_samples; i++) {
+        uint64_t index = i * m_num_channels + channel;
         if (index < 0 || index >= m_samples.size())
             continue;
         float sample = m_samples[index];
@@ -116,7 +116,7 @@ void AudioBuffer::sample_amplitude(int channel, double start_time, double durati
     out_min = min;
 }
 
-bool AudioBuffer::delete_region(int64_t start, int64_t end) {
+bool AudioBuffer::delete_region(uint64_t start, uint64_t end) {
     Q_ASSERT(start < end);
     start = limit_bounds(start);
     end = limit_bounds(end);
@@ -132,7 +132,7 @@ bool AudioBuffer::delete_region(int64_t start, int64_t end) {
 }
 
 
-bool AudioBuffer::copy_region(int64_t start, int64_t end, AudioBuffer& to) const {
+bool AudioBuffer::copy_region(uint64_t start, uint64_t end, AudioBuffer& to) const {
     Q_ASSERT(start < end);
     start = limit_bounds(start);
     end = limit_bounds(end);
@@ -148,7 +148,7 @@ bool AudioBuffer::copy_region(int64_t start, int64_t end, AudioBuffer& to) const
     return true;
 }
 
-bool AudioBuffer::cut_region(int64_t start, int64_t end, AudioBuffer& to) {
+bool AudioBuffer::cut_region(uint64_t start, uint64_t end, AudioBuffer& to) {
     Q_ASSERT(start < end);
     start = limit_bounds(start);
     end = limit_bounds(end);
@@ -160,8 +160,8 @@ bool AudioBuffer::cut_region(int64_t start, int64_t end, AudioBuffer& to) {
     return true;
 }
 
-bool AudioBuffer::paste_from(int64_t where, const AudioBuffer& from) {
-    Q_ASSERT(where >= 0 && where <= m_num_samples);
+bool AudioBuffer::paste_from(uint64_t where, const AudioBuffer& from) {
+    Q_ASSERT(where >= 0 && where <= m_num_frames);
     where *= m_num_channels;
 
     m_samples.insert(m_samples.begin() + where, from.m_samples.begin(), from.m_samples.end());
@@ -170,10 +170,10 @@ bool AudioBuffer::paste_from(int64_t where, const AudioBuffer& from) {
 }
 
 void AudioBuffer::on_length_changed() {
-    m_num_samples = m_samples.size() / m_num_channels;
-    m_total_duration = m_num_samples / (double) m_sample_rate;
+    m_num_frames = m_samples.size() / m_num_channels;
+    m_total_duration = m_num_frames / (double) m_sample_rate;
 }
 
-int64_t AudioBuffer::limit_bounds(int64_t sample_index) const {
-    return std::max(std::min(sample_index, m_num_samples), (int64_t) 0);
+uint64_t AudioBuffer::limit_bounds(uint64_t sample_index) const {
+    return std::max(std::min(sample_index, m_num_frames), (uint64_t) 0);
 }

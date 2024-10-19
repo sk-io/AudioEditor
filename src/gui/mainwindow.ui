@@ -75,6 +75,7 @@
     <bool>false</bool>
    </attribute>
    <addaction name="actionPlay"/>
+   <addaction name="actionStop"/>
   </widget>
   <action name="actionNew">
    <property name="text">
@@ -171,6 +172,9 @@
    <property name="text">
     <string>Play</string>
    </property>
+   <property name="shortcut">
+    <string>Space</string>
+   </property>
    <property name="menuRole">
     <enum>QAction::MenuRole::NoRole</enum>
    </property>
@@ -192,6 +196,17 @@
    </property>
    <property name="shortcut">
     <string>Ctrl+A</string>
+   </property>
+  </action>
+  <action name="actionStop">
+   <property name="icon">
+    <iconset theme="QIcon::ThemeIcon::MediaPlaybackStop"/>
+   </property>
+   <property name="text">
+    <string>Stop</string>
+   </property>
+   <property name="menuRole">
+    <enum>QAction::MenuRole::NoRole</enum>
    </property>
   </action>
  </widget>

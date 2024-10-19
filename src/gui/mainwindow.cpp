@@ -130,8 +130,8 @@ void MainWindow::perform_action(Action action) {
     double select_start = std::min(m_audio_widget->m_selection_pos_a, m_audio_widget->m_selection_pos_b);
     double select_end = std::max(m_audio_widget->m_selection_pos_a, m_audio_widget->m_selection_pos_b);
 
-    int64_t start = the_app.buffer.get_sample_index(select_start);
-    int64_t end = the_app.buffer.get_sample_index(select_end);
+    int64_t start = the_app.buffer.get_frame(select_start);
+    int64_t end = the_app.buffer.get_frame(select_end);
 
     switch (action) {
     case Action::DELETE:
@@ -198,5 +198,18 @@ void MainWindow::on_actionSelect_All_triggered() {
 }
 
 void MainWindow::on_actionPlay_triggered() {
-    test_play_audio();
+    if (the_app.interface.m_state != AudioInterface::State::IDLE)
+        return;
+
+    uint64_t frame_pos = 0;
+
+    if (m_audio_widget->m_selection_state != AudioWidget::SelectionState::DESELECTED)
+        frame_pos = the_app.buffer.get_frame(m_audio_widget->m_selection_pos_a);
+
+    the_app.interface.set_pos(frame_pos);
+    the_app.interface.play();
+}
+
+void MainWindow::on_actionStop_triggered() {
+    the_app.interface.stop();
 }

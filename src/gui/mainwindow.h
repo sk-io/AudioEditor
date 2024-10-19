@@ -14,7 +14,6 @@ QT_END_NAMESPACE
 
 class MainWindow : public QMainWindow {
     Q_OBJECT
-
 public:
     MainWindow(QWidget* parent = nullptr);
     ~MainWindow();
@@ -36,6 +35,7 @@ private slots:
     void on_actionDeselect_triggered();
     void on_actionSelect_All_triggered();
     void on_actionPlay_triggered();
+    void on_actionStop_triggered();
 
 private:
     enum class Action {
@@ -46,13 +46,14 @@ private:
         TRIM,
     };
 
+    void update_title();
+    void perform_action(Action action);
+
+private:
     Ui::MainWindow* ui;
     QLabel* m_file_info;
     QLabel* m_mouse_info;
     AudioWidget* m_audio_widget;
-
-    void update_title();
-    void perform_action(Action action);
 };
 
 #endif // MAINWINDOW_H

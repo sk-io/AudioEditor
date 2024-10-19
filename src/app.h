@@ -2,6 +2,7 @@
 #define APP_H
 
 #include "audiobuffer.h"
+#include "audiointerface.h"
 
 #include <QString>
 
@@ -15,6 +16,7 @@ struct App {
     QString file_path;
     QString last_dir;
     bool unsaved_changes;
+    AudioInterface interface;
 };
 
 extern App the_app;
@@ -22,6 +24,5 @@ extern App the_app;
 int run_app(int argc, char* argv[]);
 void save_state();
 void undo_state();
-void test_play_audio();
 
 #endif // APP_H
