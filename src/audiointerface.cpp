@@ -1,12 +1,12 @@
 #include "audiointerface.h"
 
 #include "app.h"
-#include <QtAssert>
-#include <QtLogging>
+#include <QtGlobal>
+#include <qlogging.h>
 #include <QDebug>
 #include "gui/mainwindow.h"
 
-static int playback_callback(const void* input_buf, void* output_buf,
+int playback_callback(const void* input_buf, void* output_buf,
                              unsigned long num_frames, const PaStreamCallbackTimeInfo* time_info,
                              PaStreamCallbackFlags status, void* user_data) {
     AudioInterface* interface = (AudioInterface*) user_data;
@@ -37,7 +37,7 @@ static int playback_callback(const void* input_buf, void* output_buf,
     return frames_left <= num_frames ? paComplete : paContinue;
 }
 
-static void stream_finished(void* user_data) {
+void stream_finished(void* user_data) {
     AudioInterface* interface = (AudioInterface*) user_data;
     //qDebug() << "stream finished!";
     interface->m_state = AudioInterface::State::IDLE;

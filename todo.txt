@@ -8,12 +8,15 @@ in save dialog, put format and other export parameters
 	set parameters when opening a file, unless "remember settings" is checked in save dialog
 show timeline in seconds/beats
 implement redo
-audio playback/recording
-    portaudio?
+audio recording
 config file
     recently opened files
     last dir
     settings
+ability to change audio interface
+	input, output, mono/stereo, etc.
+ability to change sample rate
+	also sets audio interface sample rate
 
 === secondary importance ===
 join samples with lines when zoomed in
@@ -34,6 +37,9 @@ effects/tools
     insert silence
 save selection state for undo/redo
 confirm exit when there are unsaved changes or when opening a file
+change sample rate
+hit space to play, space again to stop
+	restart from selection
 
 === bugs ===
 crash when pasting outside file bounds
