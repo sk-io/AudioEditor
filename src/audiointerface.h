@@ -29,6 +29,7 @@ private:
         PaStreamCallbackFlags status, void *user_data);
     friend void stream_finished(void* user_data);
     friend class MainWindow;
+    friend class AudioWidget;
 };
 
 #endif // AUDIOINTERFACE_H

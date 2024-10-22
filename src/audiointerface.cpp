@@ -4,6 +4,7 @@
 #include <QtAssert>
 #include <QtLogging>
 #include <QDebug>
+#include "gui/mainwindow.h"
 
 static int playback_callback(const void* input_buf, void* output_buf,
                              unsigned long num_frames, const PaStreamCallbackTimeInfo* time_info,
@@ -30,6 +31,8 @@ static int playback_callback(const void* input_buf, void* output_buf,
         }
     }
 
+    the_app.main_window->m_audio_widget->update();
+
     interface->m_frame_pos += num;
     return frames_left <= num_frames ? paComplete : paContinue;
 }
@@ -38,6 +41,7 @@ static void stream_finished(void* user_data) {
     AudioInterface* interface = (AudioInterface*) user_data;
     //qDebug() << "stream finished!";
     interface->m_state = AudioInterface::State::IDLE;
+    the_app.main_window->m_audio_widget->update();
 }
 
 void AudioInterface::set_pos(uint64_t frame_pos) {

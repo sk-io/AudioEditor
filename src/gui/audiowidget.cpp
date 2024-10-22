@@ -29,6 +29,7 @@ void AudioWidget::paintEvent(QPaintEvent* event) {
     QPainter painter(this);
     painter.fillRect(rect(), Qt::black);
 
+    // region selection
     if (m_selection_state == SelectionState::REGION) {
         double select_left = std::min(m_selection_pos_a, m_selection_pos_b);
         double select_right = std::max(m_selection_pos_a, m_selection_pos_b);
@@ -43,11 +44,12 @@ void AudioWidget::paintEvent(QPaintEvent* event) {
 
     // draw start line
     {
-        int x = (int) ((0 - m_scroll_pos) * m_pixels_per_second);
+        int x = project_x(0);
         painter.setPen(Qt::darkGray);
         painter.drawLine(rect().left() + x, rect().top(), rect().left() + x, rect().bottom());
     }
 
+    // marker selection
     if (m_selection_state == SelectionState::MARKER) {
         int x = project_x(m_selection_pos_a);
         painter.setPen(Qt::darkRed);
@@ -59,6 +61,15 @@ void AudioWidget::paintEvent(QPaintEvent* event) {
         painter.setPen(Qt::lightGray);
         painter.drawLine(rect().left(), rect().center().y(), rect().right(), rect().center().y());
     }
+
+    // draw playback line
+    if (the_app.interface.m_state != AudioInterface::State::IDLE) {
+        uint64_t pos = the_app.interface.m_frame_pos;
+        int x = (int) ((the_app.buffer.get_time(pos) - m_scroll_pos) * m_pixels_per_second);
+        painter.setPen(Qt::yellow);
+        painter.drawLine(rect().left() + x, rect().top(), rect().left() + x, rect().bottom());
+    }
+
 
     const AudioBuffer& buffer = the_app.buffer;
 
@@ -97,16 +108,16 @@ bool AudioWidget::event(QEvent* event) {
 
         if (m_state == State::SCROLLING) {
             m_scroll_pos = m_drag_start_scroll_pos - (m_mouse_x - m_drag_start_mouse_x) / m_pixels_per_second;
-            repaint();
+            update();
         } else if (m_state == State::SELECTING) {
             m_selection_pos_b = m_mouse_pos;
-            repaint();
+            update();
         } else if (m_state == State::RESIZE_REGION) {
             if (m_resizing_a)
                 m_selection_pos_a = m_mouse_pos;
             else
                 m_selection_pos_b = m_mouse_pos;
-            repaint();
+            update();
         } else {
             if (m_selection_state == SelectionState::REGION) {
                 int select_a = project_x(m_selection_pos_a);
@@ -165,7 +176,7 @@ bool AudioWidget::event(QEvent* event) {
             //setCursor(Qt::ArrowCursor);
         }
 
-        repaint();
+        update();
         return true;
     }
 
@@ -196,7 +207,7 @@ bool AudioWidget::event(QEvent* event) {
         double sample_size_in_pixels = (1.0 / (double) the_app.buffer.get_sample_rate()) * m_pixels_per_second;
         //qDebug() << sample_size_in_pixels;
 
-        repaint();
+        update();
         return true;
     }
 

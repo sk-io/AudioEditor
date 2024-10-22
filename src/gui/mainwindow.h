@@ -49,7 +49,7 @@ private:
     void update_title();
     void perform_action(Action action);
 
-private:
+public:
     Ui::MainWindow* ui;
     QLabel* m_file_info;
     QLabel* m_mouse_info;

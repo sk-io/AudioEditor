@@ -39,7 +39,7 @@ void MainWindow::on_actionNew_triggered() {
     the_app.unsaved_changes = false;
     update_status_bar();
     update_title();
-    m_audio_widget->repaint();
+    m_audio_widget->update();
 }
 
 void MainWindow::on_actionOpen_triggered() {
@@ -56,7 +56,7 @@ void MainWindow::on_actionOpen_triggered() {
     update_status_bar();
     update_title();
     m_audio_widget->deselect();
-    m_audio_widget->repaint();
+    m_audio_widget->update();
 }
 
 void MainWindow::on_actionSave_triggered() {
@@ -103,7 +103,7 @@ void MainWindow::on_actionUndo_triggered() {
     undo_state();
 
     update_title();
-    m_audio_widget->repaint();
+    m_audio_widget->update();
 }
 
 void MainWindow::on_actionRedo_triggered() {
@@ -184,17 +184,17 @@ void MainWindow::perform_action(Action action) {
     }
 
     update_title();
-    m_audio_widget->repaint();
+    m_audio_widget->update();
 }
 
 void MainWindow::on_actionDeselect_triggered() {
     m_audio_widget->deselect();
-    m_audio_widget->repaint();
+    m_audio_widget->update();
 }
 
 void MainWindow::on_actionSelect_All_triggered() {
     m_audio_widget->select(0, the_app.buffer.get_duration());
-    m_audio_widget->repaint();
+    m_audio_widget->update();
 }
 
 void MainWindow::on_actionPlay_triggered() {
@@ -212,4 +212,5 @@ void MainWindow::on_actionPlay_triggered() {
 
 void MainWindow::on_actionStop_triggered() {
     the_app.interface.stop();
+    m_audio_widget->update();
 }

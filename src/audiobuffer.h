@@ -26,6 +26,7 @@ public:
     int get_sample_rate() const { return m_sample_rate; }
     double get_duration() const { return m_total_duration; }
     uint64_t get_frame(double time) const { return (uint64_t) (time * m_sample_rate); }
+    double get_time(uint64_t frame_pos) const { return frame_pos / (double)m_sample_rate; }
     bool is_stereo() const { return m_num_channels == 2; };
 
     float* get_raw_pointer() {
