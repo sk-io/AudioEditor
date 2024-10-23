@@ -16,6 +16,7 @@ public:
     void save_to_file(const QString& path);
     void sample_amplitude(int channel, double start_time, double duration, float& out_max, float& out_min);
     bool delete_region(uint64_t start, uint64_t end);
+    void insert_silence(uint64_t where, uint64_t num_frames);
 
     bool copy_region(uint64_t start, uint64_t end, AudioBuffer& to) const;
     bool cut_region(uint64_t start, uint64_t end, AudioBuffer& to);

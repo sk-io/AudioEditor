@@ -131,6 +131,14 @@ bool AudioBuffer::delete_region(uint64_t start, uint64_t end) {
     return true;
 }
 
+void AudioBuffer::insert_silence(uint64_t where, uint64_t num_frames) {
+    uint64_t num = num_frames * m_num_channels;
+    for (uint64_t i = 0; i < num; i++) {
+        m_samples.push_back(0);
+    }
+    on_length_changed();
+}
+
 
 bool AudioBuffer::copy_region(uint64_t start, uint64_t end, AudioBuffer& to) const {
     Q_ASSERT(start < end);
@@ -161,7 +169,10 @@ bool AudioBuffer::cut_region(uint64_t start, uint64_t end, AudioBuffer& to) {
 }
 
 bool AudioBuffer::paste_from(uint64_t where, const AudioBuffer& from) {
-    Q_ASSERT(where >= 0 && where <= m_num_frames);
+    if (where >= m_num_frames) {
+        insert_silence(m_num_frames, where - m_num_frames);
+    }
+
     where *= m_num_channels;
 
     m_samples.insert(m_samples.begin() + where, from.m_samples.begin(), from.m_samples.end());
@@ -174,6 +185,6 @@ void AudioBuffer::on_length_changed() {
     m_total_duration = m_num_frames / (double) m_sample_rate;
 }
 
-uint64_t AudioBuffer::limit_bounds(uint64_t sample_index) const {
-    return std::max(std::min(sample_index, m_num_frames), (uint64_t) 0);
+uint64_t AudioBuffer::limit_bounds(uint64_t frame_pos) const {
+    return std::max(std::min(frame_pos, m_num_frames), (uint64_t) 0);
 }

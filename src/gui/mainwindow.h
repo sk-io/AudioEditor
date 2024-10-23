@@ -36,6 +36,7 @@ private slots:
     void on_actionSelect_All_triggered();
     void on_actionPlay_triggered();
     void on_actionStop_triggered();
+    void on_actionRecord_triggered();
 
 private:
     enum class Action {

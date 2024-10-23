@@ -214,3 +214,7 @@ void MainWindow::on_actionStop_triggered() {
     the_app.interface.stop();
     m_audio_widget->update();
 }
+
+void MainWindow::on_actionRecord_triggered() {
+
+}

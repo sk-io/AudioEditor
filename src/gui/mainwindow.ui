@@ -76,6 +76,7 @@
    </attribute>
    <addaction name="actionPlay"/>
    <addaction name="actionStop"/>
+   <addaction name="actionRecord"/>
   </widget>
   <action name="actionNew">
    <property name="text">
@@ -204,6 +205,17 @@
    </property>
    <property name="text">
     <string>Stop</string>
+   </property>
+   <property name="menuRole">
+    <enum>QAction::MenuRole::NoRole</enum>
+   </property>
+  </action>
+  <action name="actionRecord">
+   <property name="icon">
+    <iconset theme="QIcon::ThemeIcon::MediaRecord"/>
+   </property>
+   <property name="text">
+    <string>Record</string>
    </property>
    <property name="menuRole">
     <enum>QAction::MenuRole::NoRole</enum>
