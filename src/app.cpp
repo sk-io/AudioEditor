@@ -8,16 +8,21 @@
 App the_app;
 
 int run_app(int argc, char* argv[]) {
-    QApplication a(argc, argv);
-    //the_app.buffer.load_from_file("piano1_short.ogg");
+    QApplication app(argc, argv);
+
+    if (app.arguments().length() >= 2 && QFile::exists(app.arguments().at(1))) {
+        the_app.buffer.load_from_file(app.arguments().at(1));
+    } else {
+        the_app.buffer.init(2, 44100);
+    }
+
     the_app.last_dir = QDir::currentPath();
-    the_app.buffer.init(2, 44100);
     the_app.unsaved_changes = false;
 
-    MainWindow w;
-    the_app.main_window = &w;
-    w.show();
-    return a.exec();
+    MainWindow window;
+    the_app.main_window = &window;
+    window.show();
+    return app.exec();
 }
 
 void save_state() {
