@@ -29,6 +29,7 @@ add_executable(AudioEditor
 
     # ui files
     src/gui/mainwindow.ui
+    src/gui/settings.h src/gui/settings.cpp src/gui/settings.ui
 )
 
 target_link_libraries(AudioEditor

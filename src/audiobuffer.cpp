@@ -29,6 +29,11 @@ void AudioBuffer::load_from_file(const QString& path) {
 
     std::string path_str = path.toStdString();
     SNDFILE* file = sf_open(path_str.c_str(), SFM_READ, &info);
+
+    if (!file) {
+        qDebug() << "ERROR: " << sf_strerror(file);
+    }
+
     Q_ASSERT(file);
     Q_ASSERT(info.channels > 0 && info.channels <= 2);
 
@@ -138,7 +143,6 @@ void AudioBuffer::insert_silence(uint64_t where, uint64_t num_frames) {
     }
     on_length_changed();
 }
-
 
 bool AudioBuffer::copy_region(uint64_t start, uint64_t end, AudioBuffer& to) const {
     Q_ASSERT(start < end);

@@ -13,10 +13,10 @@ config file
     recently opened files
     last dir
     settings
-ability to change audio interface
-    input, output, mono/stereo, etc.
 ability to change sample rate
     also sets audio interface sample rate
+switch view between single, split view, etc.
+spectrogram
 
 === secondary importance ===
 join samples with lines when zoomed in
@@ -28,18 +28,19 @@ cues, loop points
 checkbox to toggle whether or not to shift audio when cutting/deleting
     call it "Shift"?
 icons
-incremental undo
+incremental undo (optimization)
 duplicate selection
-switch view between single, split view, spectrogram
+use a third color when left/right channels overlap
 effects/tools
     amplify
     fade in/out
     insert silence
 save selection state for undo/redo
 confirm exit when there are unsaved changes or when opening a file
-change sample rate
 hit space to play, space again to stop
     restart from selection
+improve input/output device selection
+    separate window? place in settings dialog?
 
 === bugs ===
 when undoing/redoing, it thinks there are still unsaved changes when there arent

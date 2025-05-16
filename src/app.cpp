@@ -19,6 +19,8 @@ int run_app(int argc, char* argv[]) {
     the_app.last_dir = QDir::currentPath();
     the_app.unsaved_changes = false;
 
+    the_app.interface.init();
+
     MainWindow window;
     the_app.main_window = &window;
     window.show();

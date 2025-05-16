@@ -4,6 +4,7 @@
 #include "../app.h"
 
 #include <QFileDialog>
+#include <QComboBox>
 
 MainWindow::MainWindow(QWidget* parent) :
     QMainWindow(parent), ui(new Ui::MainWindow) {
@@ -14,6 +15,43 @@ MainWindow::MainWindow(QWidget* parent) :
     m_mouse_info = new QLabel();
     ui->statusbar->addPermanentWidget(m_mouse_info);
     ui->statusbar->addPermanentWidget(m_file_info);
+    ui->toolBar->addSeparator();
+
+    // {
+    //     // API combo box
+    //     QComboBox* api_box = new QComboBox();
+    //     for (int i = 0; i < the_app.interface.get_num_apis(); i++) {
+    //         api_box->addItem(the_app.interface.get_api_name(i));
+    //     }
+    //     connect(api_box, &QComboBox::currentIndexChanged, this, [this](int index) {
+    //         the_app.interface.set_api(index);
+    //     });
+
+    //     ui->toolBar->addWidget(api_box);
+    // }
+
+    {
+        // input device box
+        QComboBox* input_device_box = new QComboBox();
+        input_device_box->setMaximumWidth(300);
+        for (int i = 0; i < the_app.interface.get_num_devices(); i++) {
+            input_device_box->addItem(the_app.interface.get_device_name(i));
+        }
+        input_device_box->setCurrentIndex(the_app.interface.m_input_dev);
+        ui->toolBar->addWidget(input_device_box);
+    }
+
+    {
+        // input device box
+        QComboBox* output_device_box = new QComboBox();
+        output_device_box->setMaximumWidth(300);
+        for (int i = 0; i < the_app.interface.get_num_devices(); i++) {
+            output_device_box->addItem(the_app.interface.get_device_name(i));
+        }
+        output_device_box->setCurrentIndex(the_app.interface.m_output_dev);
+        ui->toolBar->addWidget(output_device_box);
+    }
+
     update_status_bar();
     update_title();
 }
