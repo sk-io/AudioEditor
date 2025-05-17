@@ -5,10 +5,17 @@
 
 #include <QFileDialog>
 #include <QComboBox>
+#include <QEvent>
+#include <QMimeData>
+#include <QDragEnterEvent>
+#include <QDropEvent>
 
 MainWindow::MainWindow(QWidget* parent) :
     QMainWindow(parent), ui(new Ui::MainWindow) {
     ui->setupUi(this);
+
+    setAcceptDrops(true);
+
     m_audio_widget = new AudioWidget();
     ui->verticalLayout->addWidget(m_audio_widget);
     m_file_info = new QLabel();
@@ -85,16 +92,7 @@ void MainWindow::on_actionOpen_triggered() {
     if (path == nullptr)
         return;
 
-    QFileInfo info(path);
-    the_app.buffer.load_from_file(path);
-    the_app.file_path = path;
-    the_app.last_dir = info.dir().path();
-    the_app.unsaved_changes = false;
-
-    update_status_bar();
-    update_title();
-    m_audio_widget->deselect();
-    m_audio_widget->update();
+    load_from_file(path);
 }
 
 void MainWindow::on_actionSave_triggered() {
@@ -150,6 +148,51 @@ void MainWindow::on_actionRedo_triggered() {
 
 void MainWindow::on_actionTrim_triggered() {
     perform_action(Action::TRIM);
+}
+
+void MainWindow::on_actionDeselect_triggered() {
+    m_audio_widget->deselect();
+    m_audio_widget->update();
+}
+
+void MainWindow::on_actionSelect_All_triggered() {
+    m_audio_widget->select(0, the_app.buffer.get_duration());
+    m_audio_widget->update();
+}
+
+void MainWindow::on_actionPlay_triggered() {
+    if (the_app.interface.m_state != AudioInterface::State::IDLE)
+        return;
+
+    uint64_t frame_pos = 0;
+
+    if (m_audio_widget->m_selection_state != AudioWidget::SelectionState::DESELECTED)
+        frame_pos = the_app.buffer.get_frame(m_audio_widget->m_selection_pos_a);
+
+    the_app.interface.set_pos(frame_pos);
+    the_app.interface.play();
+}
+
+void MainWindow::on_actionStop_triggered() {
+    the_app.interface.stop();
+    m_audio_widget->update();
+}
+
+void MainWindow::on_actionRecord_triggered() {
+
+}
+
+void MainWindow::load_from_file(const QString& path) {
+    QFileInfo info(path);
+    the_app.buffer.load_from_file(path);
+    the_app.file_path = path;
+    the_app.last_dir = info.dir().path();
+    the_app.unsaved_changes = false;
+
+    update_status_bar();
+    update_title();
+    m_audio_widget->deselect();
+    m_audio_widget->update();
 }
 
 void MainWindow::update_title() {
@@ -225,34 +268,16 @@ void MainWindow::perform_action(Action action) {
     m_audio_widget->update();
 }
 
-void MainWindow::on_actionDeselect_triggered() {
-    m_audio_widget->deselect();
-    m_audio_widget->update();
+void MainWindow::dragEnterEvent(QDragEnterEvent* event) {
+    if (event->mimeData()->hasUrls()) {
+        event->acceptProposedAction();
+    }
 }
 
-void MainWindow::on_actionSelect_All_triggered() {
-    m_audio_widget->select(0, the_app.buffer.get_duration());
-    m_audio_widget->update();
-}
-
-void MainWindow::on_actionPlay_triggered() {
-    if (the_app.interface.m_state != AudioInterface::State::IDLE)
+void MainWindow::dropEvent(QDropEvent* event) {
+    if (event->mimeData()->urls().length() == 0)
         return;
 
-    uint64_t frame_pos = 0;
-
-    if (m_audio_widget->m_selection_state != AudioWidget::SelectionState::DESELECTED)
-        frame_pos = the_app.buffer.get_frame(m_audio_widget->m_selection_pos_a);
-
-    the_app.interface.set_pos(frame_pos);
-    the_app.interface.play();
-}
-
-void MainWindow::on_actionStop_triggered() {
-    the_app.interface.stop();
-    m_audio_widget->update();
-}
-
-void MainWindow::on_actionRecord_triggered() {
-
+    QString path = event->mimeData()->urls()[0].toLocalFile();
+    load_from_file(path);
 }

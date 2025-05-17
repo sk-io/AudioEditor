@@ -22,7 +22,6 @@ spectrogram
 join samples with lines when zoomed in
 profile and optimize high CPU usage
     optimize waveform rendering, cache waveform peaks for current zoom level
-drag and drop
 snap to beats, seconds, 10ths etc.
 cues, loop points
 checkbox to toggle whether or not to shift audio when cutting/deleting
