@@ -11,7 +11,7 @@ set(CMAKE_AUTORCC ON)
 
 find_package(Qt6 REQUIRED COMPONENTS Widgets)
 find_package(SndFile REQUIRED)
-find_package(portaudio REQUIRED)
+find_package(PortAudio REQUIRED)
 
 add_executable(AudioEditor
     # sources
@@ -26,15 +26,17 @@ add_executable(AudioEditor
     src/gui/mainwindow.h
     src/gui/audiowidget.h
     src/gui/audiowidget.cpp
+    src/gui/settings.h
+    src/gui/settings.cpp
 
     # ui files
     src/gui/mainwindow.ui
-    src/gui/settings.h src/gui/settings.cpp src/gui/settings.ui
+    src/gui/settings.ui
 )
 
 target_link_libraries(AudioEditor
 	PRIVATE
 		Qt::Widgets
 		SndFile::sndfile
-		portaudio
+                PortAudio::portaudio
 )
