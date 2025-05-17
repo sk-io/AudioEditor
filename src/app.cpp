@@ -3,6 +3,7 @@
 #include "gui/mainwindow.h"
 #include <QApplication>
 #include <QDir>
+#include <QMessageBox>
 #include <portaudio.h>
 
 App the_app;
@@ -37,4 +38,10 @@ void undo_state() {
 
     the_app.buffer = the_app.history.back();
     the_app.history.pop_back();
+}
+
+void show_error_box(const QString& msg) {
+    qDebug() << "ERROR: " << msg;
+    QMessageBox box;
+    box.critical(the_app.main_window, "Error", msg);
 }

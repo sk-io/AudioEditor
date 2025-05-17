@@ -183,8 +183,11 @@ void MainWindow::on_actionRecord_triggered() {
 }
 
 void MainWindow::load_from_file(const QString& path) {
+    if (!the_app.buffer.load_from_file(path)) {
+        return;
+    }
+
     QFileInfo info(path);
-    the_app.buffer.load_from_file(path);
     the_app.file_path = path;
     the_app.last_dir = info.dir().path();
     the_app.unsaved_changes = false;

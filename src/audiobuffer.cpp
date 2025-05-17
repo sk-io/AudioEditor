@@ -1,4 +1,5 @@
 #include "audiobuffer.h"
+#include "app.h"
 #include <sndfile.h>
 #include <stdint.h>
 #include <algorithm>
@@ -21,9 +22,7 @@ void AudioBuffer::init(int num_channels, int sample_rate) {
     on_length_changed();
 }
 
-void AudioBuffer::load_from_file(const QString& path) {
-    // TODO: proper error handling
-
+bool AudioBuffer::load_from_file(const QString& path) {
     SF_INFO info;
     memset(&info, 0, sizeof(info));
 
@@ -31,7 +30,8 @@ void AudioBuffer::load_from_file(const QString& path) {
     SNDFILE* file = sf_open(path_str.c_str(), SFM_READ, &info);
 
     if (!file) {
-        qDebug() << "ERROR: " << sf_strerror(file);
+        show_error_box("Error opening file: " + QString(sf_strerror(file)));
+        return false;
     }
 
     Q_ASSERT(file);
@@ -59,9 +59,10 @@ void AudioBuffer::load_from_file(const QString& path) {
 
     sf_close(file);
     on_length_changed();
+    return true;
 }
 
-void AudioBuffer::save_to_file(const QString& path) {
+bool AudioBuffer::save_to_file(const QString& path) {
     // TODO: proper error handling
     SF_INFO info;
     memset(&info, 0, sizeof(info));
@@ -92,6 +93,7 @@ void AudioBuffer::save_to_file(const QString& path) {
     }
 
     sf_close(file);
+    return true;
 }
 
 // TODO: index by samples instead of time

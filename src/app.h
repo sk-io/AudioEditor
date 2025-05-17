@@ -24,5 +24,6 @@ extern App the_app;
 int run_app(int argc, char* argv[]);
 void save_state();
 void undo_state();
+void show_error_box(const QString& msg);
 
 #endif // APP_H
