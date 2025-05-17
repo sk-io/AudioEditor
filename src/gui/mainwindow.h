@@ -47,8 +47,11 @@ private:
         TRIM,
     };
 
+    void load_from_file(const QString& path);
     void update_title();
     void perform_action(Action action);
+    void dragEnterEvent(QDragEnterEvent *e);
+    void dropEvent(QDropEvent *e);
 
 public:
     Ui::MainWindow* ui;

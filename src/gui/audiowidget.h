@@ -28,10 +28,19 @@ private:
         REGION,
     };
 
+    enum class ViewMode {
+        OVERLAPPED,
+        SPLIT_CHANNEL,
+        SPECTRUM,
+    };
+
     void paintEvent(QPaintEvent *event);
+    void draw_waveform_channel(int channel, QPainter& painter, int x0, int x1, int y0, int y1, const QColor& color);
+    void draw_single_view();
+    void draw_split_view();
     bool event(QEvent *event);
-    int project_x(double time);
-    int project_y(float amplitude);
+    int project_x(double time) const;
+    int project_y(float amplitude, int y0, int y1) const;
 
 private:
     State m_state = State::IDLE;
@@ -45,6 +54,7 @@ private:
     double m_selection_pos_b = 0;
     SelectionState m_selection_state = SelectionState::DESELECTED;
     bool m_resizing_a = true; // true for a, false for b
+    ViewMode m_view = ViewMode::SPLIT_CHANNEL;
 
     friend class MainWindow;
 };
