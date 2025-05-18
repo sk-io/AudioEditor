@@ -6,7 +6,6 @@ should we support multiple internal formats?
     right now we convert from and to 32bit float on save/load
 in save dialog, put format and other export parameters
     set parameters when opening a file, unless "remember settings" is checked in save dialog
-show timeline in seconds/beats
 implement redo
 audio recording
 config file
@@ -39,6 +38,7 @@ hit space to play, space again to stop
     restart from selection
 improve input/output device selection
     separate window? place in settings dialog?
+option to show samples/beats on timeline instead of seconds
 
 === bugs ===
 when undoing/redoing, it thinks there are still unsaved changes when there arent

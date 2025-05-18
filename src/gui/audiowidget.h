@@ -39,6 +39,7 @@ private:
     void draw_waveform_channel(int channel, QPainter& painter, int x0, int x1, int y0, int y1, const QColor& color);
     void draw_single_view();
     void draw_split_view();
+    void draw_timeline(int y0, int y1);
     bool event(QEvent *event);
     int project_x(double time) const;
     int project_y(float amplitude, int y0, int y1) const;
@@ -56,6 +57,7 @@ private:
     SelectionState m_selection_state = SelectionState::DESELECTED;
     bool m_resizing_a = true; // true for a, false for b
     ViewMode m_view = ViewMode::OVERLAPPED;
+    int m_timeline_height = 20;
 
     friend class MainWindow;
 };
