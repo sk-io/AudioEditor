@@ -40,6 +40,7 @@ private slots:
     void on_actionViewSingle_triggered();
     void on_actionViewSplit_triggered();
     void on_actionViewSpectrogram_triggered();
+    void on_actionNormalize_triggered();
 
 private:
     enum class Action {
@@ -48,6 +49,7 @@ private:
         CUT,
         PASTE,
         TRIM,
+        NORMALIZE,
     };
 
     void load_from_file(const QString& path);

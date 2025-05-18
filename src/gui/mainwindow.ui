@@ -47,6 +47,7 @@
     <addaction name="separator"/>
     <addaction name="actionDelete"/>
     <addaction name="actionTrim"/>
+    <addaction name="actionNormalize"/>
     <addaction name="separator"/>
     <addaction name="actionSelect_All"/>
     <addaction name="actionDeselect"/>
@@ -255,6 +256,14 @@
    </property>
    <property name="toolTip">
     <string>Spectrogram</string>
+   </property>
+  </action>
+  <action name="actionNormalize">
+   <property name="text">
+    <string>Normalize</string>
+   </property>
+   <property name="shortcut">
+    <string>N</string>
    </property>
   </action>
  </widget>

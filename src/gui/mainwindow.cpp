@@ -205,6 +205,10 @@ void MainWindow::on_actionViewSpectrogram_triggered() {
     ui->actionViewSpectrogram->setChecked(true);
 }
 
+void MainWindow::on_actionNormalize_triggered() {
+    perform_action(Action::NORMALIZE);
+}
+
 void MainWindow::load_from_file(const QString& path) {
     if (!the_app.buffer.load_from_file(path)) {
         return;
@@ -286,6 +290,16 @@ void MainWindow::perform_action(Action action) {
         the_app.unsaved_changes = true;
         break;
     }
+    case Action::NORMALIZE:
+        save_state();
+        if (m_audio_widget->m_selection_state == AudioWidget::SelectionState::REGION) {
+            the_app.buffer.normalize_region(start, end);
+        } else {
+            the_app.buffer.normalize_region(0, the_app.buffer.get_num_frames());
+        }
+        m_audio_widget->deselect();
+        the_app.unsaved_changes = true;
+        break;
     default:
         Q_ASSERT(false);
     }
