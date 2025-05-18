@@ -25,6 +25,11 @@ void AudioWidget::deselect() {
     setCursor(Qt::ArrowCursor);
 }
 
+void AudioWidget::set_view_mode(ViewMode mode) {
+    m_view = mode;
+    update();
+}
+
 void AudioWidget::paintEvent(QPaintEvent* event) {
     switch (m_view) {
     case ViewMode::OVERLAPPED:

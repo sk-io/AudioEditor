@@ -55,6 +55,15 @@
     <property name="title">
      <string>View</string>
     </property>
+    <widget class="QMenu" name="menuChange_View">
+     <property name="title">
+      <string>Change View</string>
+     </property>
+     <addaction name="actionViewSingle"/>
+     <addaction name="actionViewSplit"/>
+     <addaction name="actionViewSpectrogram"/>
+    </widget>
+    <addaction name="menuChange_View"/>
    </widget>
    <addaction name="menuFile"/>
    <addaction name="menuEdit"/>
@@ -219,6 +228,33 @@
    </property>
    <property name="menuRole">
     <enum>QAction::MenuRole::NoRole</enum>
+   </property>
+  </action>
+  <action name="actionViewSingle">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Single</string>
+   </property>
+  </action>
+  <action name="actionViewSplit">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Split Channels</string>
+   </property>
+  </action>
+  <action name="actionViewSpectrogram">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Spectrogram</string>
+   </property>
+   <property name="toolTip">
+    <string>Spectrogram</string>
    </property>
   </action>
  </widget>

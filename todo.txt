@@ -15,7 +15,6 @@ config file
     settings
 ability to change sample rate
     also sets audio interface sample rate
-switch view between single, split view, etc.
 spectrogram
 
 === secondary importance ===

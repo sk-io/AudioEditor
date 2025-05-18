@@ -37,6 +37,9 @@ private slots:
     void on_actionPlay_triggered();
     void on_actionStop_triggered();
     void on_actionRecord_triggered();
+    void on_actionViewSingle_triggered();
+    void on_actionViewSplit_triggered();
+    void on_actionViewSpectrogram_triggered();
 
 private:
     enum class Action {

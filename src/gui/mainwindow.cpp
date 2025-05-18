@@ -9,6 +9,7 @@
 #include <QMimeData>
 #include <QDragEnterEvent>
 #include <QDropEvent>
+#include <QActionGroup>
 
 MainWindow::MainWindow(QWidget* parent) :
     QMainWindow(parent), ui(new Ui::MainWindow) {
@@ -58,6 +59,14 @@ MainWindow::MainWindow(QWidget* parent) :
         output_device_box->setCurrentIndex(the_app.interface.m_output_dev);
         ui->toolBar->addWidget(output_device_box);
     }
+
+    QActionGroup* group = new QActionGroup(this);
+    group->addAction(ui->actionViewSingle);
+    group->addAction(ui->actionViewSplit);
+    group->addAction(ui->actionViewSpectrogram);
+    ui->actionViewSingle->setChecked(true);
+
+    ui->actionViewSpectrogram->setEnabled(false);
 
     update_status_bar();
     update_title();
@@ -179,7 +188,21 @@ void MainWindow::on_actionStop_triggered() {
 }
 
 void MainWindow::on_actionRecord_triggered() {
+}
 
+void MainWindow::on_actionViewSingle_triggered() {
+    m_audio_widget->set_view_mode(AudioWidget::ViewMode::OVERLAPPED);
+    ui->actionViewSingle->setChecked(true);
+}
+
+void MainWindow::on_actionViewSplit_triggered() {
+    m_audio_widget->set_view_mode(AudioWidget::ViewMode::SPLIT_CHANNEL);
+    ui->actionViewSplit->setChecked(true);
+}
+
+void MainWindow::on_actionViewSpectrogram_triggered() {
+    m_audio_widget->set_view_mode(AudioWidget::ViewMode::SPECTRUM);
+    ui->actionViewSpectrogram->setChecked(true);
 }
 
 void MainWindow::load_from_file(const QString& path) {

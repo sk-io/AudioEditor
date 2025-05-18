@@ -6,11 +6,18 @@
 class AudioWidget : public QWidget {
     Q_OBJECT
 public:
+    enum class ViewMode {
+        OVERLAPPED,
+        SPLIT_CHANNEL,
+        SPECTRUM,
+    };
+
     explicit AudioWidget(QWidget *parent = nullptr);
 
     double get_mouse_pos() const { return m_mouse_pos; }
     void select(double start, double end);
     void deselect();
+    void set_view_mode(ViewMode mode);
 
 signals:
 private:
@@ -26,12 +33,6 @@ private:
         DESELECTED,
         MARKER,
         REGION,
-    };
-
-    enum class ViewMode {
-        OVERLAPPED,
-        SPLIT_CHANNEL,
-        SPECTRUM,
     };
 
     void paintEvent(QPaintEvent *event);
@@ -54,7 +55,7 @@ private:
     double m_selection_pos_b = 0;
     SelectionState m_selection_state = SelectionState::DESELECTED;
     bool m_resizing_a = true; // true for a, false for b
-    ViewMode m_view = ViewMode::SPLIT_CHANNEL;
+    ViewMode m_view = ViewMode::OVERLAPPED;
 
     friend class MainWindow;
 };
