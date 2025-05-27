@@ -170,6 +170,11 @@ void MainWindow::on_actionSelect_All_triggered() {
 }
 
 void MainWindow::on_actionPlay_triggered() {
+    if (the_app.interface.m_state == AudioInterface::State::PLAYING) {
+        on_actionStop_triggered();
+        return;
+    }
+
     if (the_app.interface.m_state != AudioInterface::State::IDLE)
         return;
 
