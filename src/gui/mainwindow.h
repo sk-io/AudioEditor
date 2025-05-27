@@ -41,6 +41,7 @@ private slots:
     void on_actionViewSplit_triggered();
     void on_actionViewSpectrogram_triggered();
     void on_actionNormalize_triggered();
+    void on_actionLoop_toggled(bool checked);
 
 private:
     enum class Action {

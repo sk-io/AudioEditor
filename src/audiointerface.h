@@ -10,8 +10,7 @@ public:
     AudioInterface() {}
 
     void init();
-    void set_pos(uint64_t frame_pos);
-    void play();
+    void play(int64_t start_pos = 0, int64_t stop_pos = -1);
     void record();
     void stop();
 
@@ -33,7 +32,9 @@ public:
 
 private:
     State m_state = State::IDLE;
-    uint64_t m_frame_pos = 0;
+    int64_t m_frame_pos = 0;
+    int64_t m_start_pos = -1, m_stop_pos = -1;
+    bool m_loop = false;
     PaStream* m_stream = nullptr;
     int m_api = -1;
     int m_input_dev = -1, m_output_dev = -1;

@@ -30,6 +30,14 @@ void AudioWidget::set_view_mode(ViewMode mode) {
     update();
 }
 
+double AudioWidget::get_selection_start_time() const {
+    return std::min(m_selection_pos_a, m_selection_pos_b);
+}
+
+double AudioWidget::get_selection_end_time() const {
+    return std::max(m_selection_pos_a, m_selection_pos_b);
+}
+
 void AudioWidget::paintEvent(QPaintEvent* event) {
     switch (m_view) {
     case ViewMode::OVERLAPPED:
@@ -69,11 +77,8 @@ void AudioWidget::draw_single_view() {
 
     // region selection
     if (m_selection_state == SelectionState::REGION) {
-        double select_left = std::min(m_selection_pos_a, m_selection_pos_b);
-        double select_right = std::max(m_selection_pos_a, m_selection_pos_b);
-
-        int x0 = project_x(select_left);
-        int x1 = project_x(select_right);
+        int x0 = project_x(get_selection_start_time());
+        int x1 = project_x(get_selection_end_time());
 
         int w = x1 - x0 + 1;
 
@@ -127,11 +132,8 @@ void AudioWidget::draw_split_view() {
 
     // region selection
     if (m_selection_state == SelectionState::REGION) {
-        double select_left = std::min(m_selection_pos_a, m_selection_pos_b);
-        double select_right = std::max(m_selection_pos_a, m_selection_pos_b);
-
-        int x0 = project_x(select_left);
-        int x1 = project_x(select_right);
+        int x0 = project_x(get_selection_start_time());
+        int x1 = project_x(get_selection_end_time());
 
         int w = x1 - x0 + 1;
 

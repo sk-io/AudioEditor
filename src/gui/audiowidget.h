@@ -18,6 +18,8 @@ public:
     void select(double start, double end);
     void deselect();
     void set_view_mode(ViewMode mode);
+    double get_selection_start_time() const;
+    double get_selection_end_time() const;
 
 signals:
 private:

@@ -12,30 +12,38 @@ static int playback_callback(const void* input_buf, void* output_buf,
                              PaStreamCallbackFlags status, void* user_data) {
     AudioInterface* interface = (AudioInterface*) user_data;
 
+    if (interface->m_stop_pos != -1 && interface->m_frame_pos >= interface->m_stop_pos) {
+        if (interface->m_loop)
+            interface->m_frame_pos = interface->m_start_pos;
+        else
+            return paComplete;
+    }
+
     float* out = (float*) output_buf;
 
-    uint64_t frames_left = the_app.buffer.get_num_frames() - interface->m_frame_pos;
+    int64_t frames_left = interface->m_stop_pos - interface->m_frame_pos;
 
-    uint64_t num = std::min((uint64_t) num_frames, frames_left);
+    int64_t num = std::min((int64_t) num_frames, frames_left);
     if (the_app.buffer.is_stereo()) {
         const float* in = (const float*) the_app.buffer.get_raw_pointer();
         in += interface->m_frame_pos * 2;
-        for (uint64_t i = 0; i < num; i++) {
+        for (int64_t i = 0; i < num; i++) {
             *out++ = *in++;
             *out++ = *in++;
         }
     } else {
         const float* in = (const float*) the_app.buffer.get_raw_pointer();
         in += interface->m_frame_pos;
-        for (uint64_t i = 0; i < num; i++) {
+        for (int64_t i = 0; i < num; i++) {
             *out++ = *in++;
         }
     }
 
+    // TODO: this is not thread safe!
     the_app.main_window->m_audio_widget->update();
 
     interface->m_frame_pos += num;
-    return frames_left <= num_frames ? paComplete : paContinue;
+    return paContinue;
 }
 
 static void stream_finished(void* user_data) {
@@ -44,7 +52,6 @@ static void stream_finished(void* user_data) {
     interface->m_state = AudioInterface::State::IDLE;
     the_app.main_window->m_audio_widget->update();
 }
-
 
 void AudioInterface::init() {
     PaError err;
@@ -56,38 +63,15 @@ void AudioInterface::init() {
     Q_ASSERT(m_input_dev != paNoDevice);
     m_output_dev = Pa_GetDefaultOutputDevice();
     Q_ASSERT(m_output_dev != paNoDevice);
-
-    int num = Pa_GetHostApiCount();
-
-    // for (int i = 0; i < num; i++) {
-    //     const PaHostApiInfo* info = Pa_GetHostApiInfo(i);
-    //     qDebug() << "------------------------------";
-    //     qDebug() << info->name;
-
-    //     for (int d = 0; d < info->deviceCount; d++) {
-    //         int device_index = Pa_HostApiDeviceIndexToDeviceIndex(i, d);
-
-    //         const PaDeviceInfo* info = Pa_GetDeviceInfo(device_index);
-
-    //         qDebug() << "  " << info->name;
-    //         qDebug() << "    " << info->defaultSampleRate << ", " << info->maxInputChannels << ", " << info->maxOutputChannels;
-    //     }
-    // }
 }
 
-void AudioInterface::set_pos(uint64_t frame_pos) {
+void AudioInterface::play(int64_t start_pos, int64_t stop_pos) {
     if (m_state != State::IDLE)
         return;
 
-    m_frame_pos = frame_pos;
-}
-
-void AudioInterface::play() {
-    if (m_state != State::IDLE)
-        return;
-
-    if (m_frame_pos >= the_app.buffer.get_num_frames())
-        return;
+    m_start_pos = std::min(start_pos, the_app.buffer.get_num_frames());
+    m_stop_pos = std::min(stop_pos, the_app.buffer.get_num_frames());
+    m_frame_pos = m_start_pos;
 
     PaError err;
 

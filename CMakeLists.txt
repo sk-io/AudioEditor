@@ -32,11 +32,14 @@ add_executable(AudioEditor
     # ui files
     src/gui/mainwindow.ui
     src/gui/settings.ui
+
+    # resource files
+    resources.qrc
 )
 
 target_link_libraries(AudioEditor
-	PRIVATE
-		Qt::Widgets
-		SndFile::sndfile
-                PortAudio::portaudio
+    PRIVATE
+        Qt::Widgets
+        SndFile::sndfile
+        PortAudio::portaudio
 )

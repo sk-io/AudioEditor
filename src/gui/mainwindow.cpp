@@ -178,13 +178,18 @@ void MainWindow::on_actionPlay_triggered() {
     if (the_app.interface.m_state != AudioInterface::State::IDLE)
         return;
 
-    uint64_t frame_pos = 0;
+    int64_t start_pos = 0;
+    int64_t stop_pos = -1;
 
     if (m_audio_widget->m_selection_state != AudioWidget::SelectionState::DESELECTED)
-        frame_pos = the_app.buffer.get_frame(m_audio_widget->m_selection_pos_a);
+        start_pos = the_app.buffer.get_frame(m_audio_widget->get_selection_start_time());
 
-    the_app.interface.set_pos(frame_pos);
-    the_app.interface.play();
+    if (m_audio_widget->m_selection_state == AudioWidget::SelectionState::REGION)
+        stop_pos = the_app.buffer.get_frame(m_audio_widget->get_selection_end_time());
+    else
+        stop_pos = the_app.buffer.get_num_frames();
+
+    the_app.interface.play(start_pos, stop_pos);
 }
 
 void MainWindow::on_actionStop_triggered() {
@@ -212,6 +217,10 @@ void MainWindow::on_actionViewSpectrogram_triggered() {
 
 void MainWindow::on_actionNormalize_triggered() {
     perform_action(Action::NORMALIZE);
+}
+
+void MainWindow::on_actionLoop_toggled(bool checked) {
+    the_app.interface.m_loop = checked;
 }
 
 void MainWindow::load_from_file(const QString& path) {
@@ -243,8 +252,8 @@ void MainWindow::update_title() {
 }
 
 void MainWindow::perform_action(Action action) {
-    double select_start = std::min(m_audio_widget->m_selection_pos_a, m_audio_widget->m_selection_pos_b);
-    double select_end = std::max(m_audio_widget->m_selection_pos_a, m_audio_widget->m_selection_pos_b);
+    double select_start = m_audio_widget->get_selection_start_time();
+    double select_end = m_audio_widget->get_selection_end_time();
 
     int64_t start = the_app.buffer.get_frame(select_start);
     int64_t end = the_app.buffer.get_frame(select_end);
