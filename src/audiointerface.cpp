@@ -7,7 +7,7 @@
 #include "gui/mainwindow.h"
 
 
-static int playback_callback(const void* input_buf, void* output_buf,
+int playback_callback(const void* input_buf, void* output_buf,
                              unsigned long num_frames, const PaStreamCallbackTimeInfo* time_info,
                              PaStreamCallbackFlags status, void* user_data) {
     AudioInterface* interface = (AudioInterface*) user_data;
@@ -46,7 +46,7 @@ static int playback_callback(const void* input_buf, void* output_buf,
     return paContinue;
 }
 
-static void stream_finished(void* user_data) {
+void stream_finished(void* user_data) {
     AudioInterface* interface = (AudioInterface*) user_data;
 
     interface->m_state = AudioInterface::State::IDLE;

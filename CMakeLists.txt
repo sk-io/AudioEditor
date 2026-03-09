@@ -9,6 +9,8 @@ set(CMAKE_AUTOUIC ON)
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
 
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
+
 find_package(Qt6 REQUIRED COMPONENTS Widgets)
 find_package(SndFile REQUIRED)
 find_package(PortAudio REQUIRED)

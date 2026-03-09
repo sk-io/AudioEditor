@@ -14,10 +14,10 @@ config file
     settings
 ability to change sample rate
     also sets audio interface sample rate
-spectrogram
 
 === secondary importance ===
 join samples with lines when zoomed in
+spectrogram
 profile and optimize high CPU usage
     optimize waveform rendering, cache waveform peaks for current zoom level
 snap to beats, seconds, 10ths etc.
@@ -39,6 +39,8 @@ hit space to play, space again to stop
 improve input/output device selection
     separate window? place in settings dialog?
 option to show samples/beats on timeline instead of seconds
+scripting support?
+multiple tracks?
 
 === bugs ===
 when undoing/redoing, it thinks there are still unsaved changes when there arent
