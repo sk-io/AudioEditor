@@ -10,6 +10,7 @@
 AudioWidget::AudioWidget(QWidget* parent) : QWidget{parent} {
     setMouseTracking(true);
     setAutoFillBackground(true);
+    m_pixels_per_second = pow(1.5, m_zoom);
 }
 
 void AudioWidget::select(double start, double end) {
@@ -300,31 +301,37 @@ bool AudioWidget::event(QEvent* event) {
     if (event->type() == QEvent::Wheel) {
         QWheelEvent* wheel = (QWheelEvent*) event;
 
-        if (m_state != State::IDLE && m_state != State::RESIZE_REGION_HOVER)
-            return true;
+        if (wheel->angleDelta().y() != 0) {
+            if (m_state != State::IDLE && m_state != State::RESIZE_REGION_HOVER)
+                return true;
 
-        double old_scroll_pos = m_scroll_pos;
-        double old_scroll_right_pos = m_scroll_pos + rect().width() / m_pixels_per_second;
+            double old_scroll_pos = m_scroll_pos;
+            double old_scroll_right_pos = m_scroll_pos + rect().width() / m_pixels_per_second;
 
-        double lerp_val = m_mouse_x / (double) rect().width();
+            double lerp_val = m_mouse_x / (double) rect().width();
 
-        double new_pixels_per_sec = m_pixels_per_second;
-        if (wheel->angleDelta().y() > 0) {
-            new_pixels_per_sec *= 1.5;
-        } else {
-            new_pixels_per_sec /= 1.5;
+            m_zoom += wheel->angleDelta().y() * 0.01;
+            m_zoom = fmin(50, m_zoom);
+            m_zoom = fmax(0.001, m_zoom);
+
+            m_pixels_per_second = pow(1.5, m_zoom);
+
+            double new_width_seconds = rect().width() / m_pixels_per_second;
+            double scroll_max = old_scroll_right_pos - new_width_seconds;
+
+            m_scroll_pos = old_scroll_pos + (scroll_max - old_scroll_pos) * lerp_val;
+
+            double sample_size_in_pixels = (1.0 / (double) the_app.buffer.get_sample_rate()) * m_pixels_per_second;
+            //qDebug() << sample_size_in_pixels;
+
+            update();
         }
 
-        double new_width_seconds = rect().width() / new_pixels_per_sec;
-        double scroll_max = old_scroll_right_pos - new_width_seconds;
+        if (wheel->angleDelta().x() != 0) {
+            m_scroll_pos += wheel->angleDelta().x() / m_pixels_per_second;
+            update();
+        }
 
-        m_scroll_pos = old_scroll_pos + (scroll_max - old_scroll_pos) * lerp_val;
-        m_pixels_per_second = new_pixels_per_sec;
-
-        double sample_size_in_pixels = (1.0 / (double) the_app.buffer.get_sample_rate()) * m_pixels_per_second;
-        //qDebug() << sample_size_in_pixels;
-
-        update();
         return true;
     }
 

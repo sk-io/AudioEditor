@@ -96,7 +96,6 @@ bool AudioBuffer::save_to_file(const QString& path) {
     return true;
 }
 
-// TODO: rename max/min to pos/neg?
 void AudioBuffer::sample_amplitude(int channel, int64_t start, int64_t end, float& out_max, float& out_min) {
     Q_ASSERT(m_sample_rate > 0);
     Q_ASSERT(m_num_channels > 0);

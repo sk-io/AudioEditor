@@ -51,7 +51,7 @@ private:
     double m_scroll_pos = 0; // at left side, in seconds
     int m_mouse_x = 0; // relative to this widget
     double m_mouse_pos = 0;
-    double m_pixels_per_second = 1000; // the visual size of a second in pixels
+    double m_pixels_per_second = 0; // the visual size of a second in pixels
     double m_drag_start_scroll_pos = 0;
     double m_drag_start_mouse_x = 0;
     double m_selection_pos_a = 0; // can be to the left or right of b
@@ -60,6 +60,7 @@ private:
     bool m_resizing_a = true; // true for a, false for b
     ViewMode m_view = ViewMode::OVERLAPPED;
     int m_timeline_height = 20;
+    double m_zoom = 12;
 
     friend class MainWindow;
 };
