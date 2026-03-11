@@ -19,6 +19,7 @@ public:
     ~MainWindow();
 
     void update_status_bar();
+    void load_from_file(const QString& path);
 
 private slots:
     void on_actionNew_triggered();
@@ -53,7 +54,6 @@ private:
         NORMALIZE,
     };
 
-    void load_from_file(const QString& path);
     void update_title();
     void perform_action(Action action);
     void dragEnterEvent(QDragEnterEvent *e);

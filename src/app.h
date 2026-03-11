@@ -3,6 +3,7 @@
 
 #include "audiobuffer.h"
 #include "audiointerface.h"
+#include "waveformvisual.h"
 
 #include <QString>
 
@@ -17,6 +18,7 @@ struct App {
     QString last_dir;
     bool unsaved_changes;
     AudioInterface interface;
+    WaveformVisual waveform;
 };
 
 extern App the_app;

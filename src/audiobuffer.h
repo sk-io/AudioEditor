@@ -24,21 +24,19 @@ public:
     bool cut_region(int64_t start, int64_t end, AudioBuffer& to);
     bool paste_from(int64_t where, const AudioBuffer& from);
 
-    int64_t get_num_frames() const { return m_num_frames; };
+    int64_t get_num_frames() const { return m_num_frames; }
     int get_num_channels() const { return m_num_channels; }
     int get_sample_rate() const { return m_sample_rate; }
     double get_duration() const { return m_total_duration; }
     int64_t get_frame(double time) const { return (int64_t) (time * m_sample_rate); }
     double get_time(int64_t frame_pos) const { return frame_pos / (double)m_sample_rate; }
-    bool is_stereo() const { return m_num_channels == 2; };
+    bool is_stereo() const { return m_num_channels == 2; }
+    const std::vector<float>& get_samples() const { return m_samples; }
 
     float* get_raw_pointer() {
         return m_samples.size() == 0 ? nullptr : &m_samples[0];
     }
 
-    const std::vector<float>& get_samples() const {
-        return m_samples;
-    }
 private:
     void on_length_changed();
     int64_t limit_bounds(int64_t frame_pos) const;

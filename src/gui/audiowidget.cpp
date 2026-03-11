@@ -53,6 +53,36 @@ void AudioWidget::paintEvent(QPaintEvent* event) {
 }
 
 void AudioWidget::draw_waveform_channel(int channel, QPainter& painter, int x0, int x1, int y0, int y1, const QColor& color) {
+    double frames_per_pixel = (the_app.buffer.get_sample_rate() / m_pixels_per_second);
+
+    const WaveformVisual& waveform = the_app.waveform;
+    if (!waveform.is_ready())
+        return;
+
+    int level_i = waveform.find_best_level(frames_per_pixel);
+
+    if (level_i >= 0) {
+        const WaveformVisual::Level& level = waveform.get_level(level_i);
+        qDebug() << "samples/pixel: " << frames_per_pixel << "chosen level_i: " << level_i << "bucket_size: " << level.bucket_size;
+
+        for (int x = x0; x < x1; x++) {
+            double time = x / m_pixels_per_second + m_scroll_pos;
+            if (time < 0 || time >= the_app.buffer.get_duration())
+                continue;
+
+            int64_t start_frame = the_app.buffer.get_frame(time);
+            int64_t end_frame = start_frame + the_app.buffer.get_frame(1.0 / m_pixels_per_second);
+
+            float min, max;
+            waveform.sample(start_frame, end_frame, level_i, channel, min, max);
+
+            painter.setPen(color);
+            painter.drawLine(x, project_y(max, y0, y1), x, project_y(min, y0, y1));
+        }
+
+        return;
+    }
+
     for (int x = x0; x < x1; x++) {
         double time = x / m_pixels_per_second + m_scroll_pos;
         if (time < 0 || time >= the_app.buffer.get_duration())
@@ -321,14 +351,14 @@ bool AudioWidget::event(QEvent* event) {
 
             m_scroll_pos = old_scroll_pos + (scroll_max - old_scroll_pos) * lerp_val;
 
-            double sample_size_in_pixels = (1.0 / (double) the_app.buffer.get_sample_rate()) * m_pixels_per_second;
-            //qDebug() << sample_size_in_pixels;
+            //double pixels_per_sample = (m_pixels_per_second / (double) the_app.buffer.get_sample_rate());
+            //qDebug() << "pixels/sample: " << pixels_per_sample << "samples/pixel: " << 1.0 / pixels_per_sample;
 
             update();
         }
 
         if (wheel->angleDelta().x() != 0) {
-            m_scroll_pos += wheel->angleDelta().x() / m_pixels_per_second;
+            m_scroll_pos -= wheel->angleDelta().x() / m_pixels_per_second;
             update();
         }
 

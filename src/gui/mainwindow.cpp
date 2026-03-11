@@ -232,6 +232,7 @@ void MainWindow::load_from_file(const QString& path) {
     the_app.file_path = path;
     the_app.last_dir = info.dir().path();
     the_app.unsaved_changes = false;
+    the_app.waveform.render(4);
 
     update_status_bar();
     update_title();
