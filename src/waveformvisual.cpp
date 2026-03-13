@@ -4,30 +4,40 @@
 #include <math.h>
 #include <algorithm>
 
-WaveformVisual::WaveformVisual() {}
-
-void WaveformVisual::render(int num_levels) {
+void WaveformVisual::render(int64_t start_frame, int64_t end_frame) {
     int64_t total_frames = the_app.buffer.get_num_frames();
     num_channels = the_app.buffer.get_num_channels();
+    const int bucket_sizes[] = {
+        128, 8192,
+    };
+
+    Q_ASSERT(num_levels <= sizeof(bucket_sizes) / sizeof(bucket_sizes[0]));
 
     for (int i = 0; i < num_levels; i++) {
-        int bucket_size = (int) pow(4, i + 2);
+        int bucket_size = bucket_sizes[i];
         Level level;
         level.bucket_size = bucket_size;
 
         for (int channel = 0; channel < num_channels; channel++) {
             // rounded up
             int64_t num_buckets = (total_frames + bucket_size - 1) / bucket_size;
-            for (int b = 0; b < num_buckets; b++) {
-                int64_t start_frame = b * bucket_size;
-                int64_t end_frame = start_frame + bucket_size;
+
+            int64_t start_bucket = start_frame / bucket_size;
+            int64_t end_bucket = end_frame == -1 ? num_buckets : end_frame / bucket_size;
+
+            if (end_bucket >= level.buckets[channel].size())
+                level.buckets[channel].resize(end_bucket);
+
+            for (int b = start_bucket; b < end_bucket; b++) {
+                int64_t bucket_start_frame = b * bucket_size;
+                int64_t bucket_end_frame = bucket_start_frame + bucket_size;
 
                 float min, max;
-                the_app.buffer.sample_amplitude(channel, start_frame, end_frame, max, min);
-                level.buckets[channel].push_back(Bucket{
+                the_app.buffer.sample_amplitude(channel, bucket_start_frame, bucket_end_frame, max, min);
+                level.buckets[channel][b] = Bucket{
                     .min = min,
                     .max = max,
-                });
+                };
             }
         }
 

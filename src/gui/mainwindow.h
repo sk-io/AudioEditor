@@ -56,6 +56,7 @@ private:
 
     void update_title();
     void perform_action(Action action);
+    void on_change();
     void dragEnterEvent(QDragEnterEvent *e);
     void dropEvent(QDropEvent *e);
 

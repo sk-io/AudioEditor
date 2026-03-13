@@ -147,8 +147,7 @@ void MainWindow::on_actionCut_triggered() {
 void MainWindow::on_actionUndo_triggered() {
     undo_state();
 
-    update_title();
-    m_audio_widget->update();
+    on_change();
 }
 
 void MainWindow::on_actionRedo_triggered() {
@@ -319,7 +318,12 @@ void MainWindow::perform_action(Action action) {
         Q_ASSERT(false);
     }
 
+    on_change();
+}
+
+void MainWindow::on_change() {
     update_title();
+    the_app.waveform.render(); // TODO: only redraw changed portions
     m_audio_widget->update();
 }
 

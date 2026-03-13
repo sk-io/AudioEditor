@@ -15,18 +15,13 @@ public:
         int bucket_size; // frames per bucket
     };
 
-    WaveformVisual();
+    WaveformVisual() {}
 
-    // TODO: do this?
-    //void mark_dirty(int64_t start_frame, int64_t end_frame);
-    void render(int num_levels);
+    void render(int64_t start_frame = 0, int64_t end_frame = -1);
     int find_best_level(double frames_per_pixel) const;
     void sample(int64_t frame_start, int64_t frame_end, int level_i, int channel, float& min, float& max) const;
 
     const int get_num_levels() const { return levels.size(); }
-    bool is_ready() const {
-        return !levels.empty();
-    }
 
     const Level& get_level(int level) const {
         return levels[level];
@@ -34,7 +29,8 @@ public:
 
 private:
     std::vector<Level> levels;
-    int num_channels = -1;
+    const int num_levels = 2; // TODO: allow user to adjust?
+    int num_channels = 0;
 };
 
 #endif // WAVEFORMVISUAL_H

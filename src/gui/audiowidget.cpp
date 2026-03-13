@@ -56,32 +56,8 @@ void AudioWidget::draw_waveform_channel(int channel, QPainter& painter, int x0, 
     double frames_per_pixel = (the_app.buffer.get_sample_rate() / m_pixels_per_second);
 
     const WaveformVisual& waveform = the_app.waveform;
-    if (!waveform.is_ready())
-        return;
 
     int level_i = waveform.find_best_level(frames_per_pixel);
-
-    if (level_i >= 0) {
-        const WaveformVisual::Level& level = waveform.get_level(level_i);
-        qDebug() << "samples/pixel: " << frames_per_pixel << "chosen level_i: " << level_i << "bucket_size: " << level.bucket_size;
-
-        for (int x = x0; x < x1; x++) {
-            double time = x / m_pixels_per_second + m_scroll_pos;
-            if (time < 0 || time >= the_app.buffer.get_duration())
-                continue;
-
-            int64_t start_frame = the_app.buffer.get_frame(time);
-            int64_t end_frame = start_frame + the_app.buffer.get_frame(1.0 / m_pixels_per_second);
-
-            float min, max;
-            waveform.sample(start_frame, end_frame, level_i, channel, min, max);
-
-            painter.setPen(color);
-            painter.drawLine(x, project_y(max, y0, y1), x, project_y(min, y0, y1));
-        }
-
-        return;
-    }
 
     for (int x = x0; x < x1; x++) {
         double time = x / m_pixels_per_second + m_scroll_pos;
@@ -92,7 +68,10 @@ void AudioWidget::draw_waveform_channel(int channel, QPainter& painter, int x0, 
         int64_t end_frame = start_frame + the_app.buffer.get_frame(1.0 / m_pixels_per_second);
 
         float max, min;
-        the_app.buffer.sample_amplitude(channel, start_frame, end_frame, max, min);
+        if (level_i >= 0)
+            waveform.sample(start_frame, end_frame, level_i, channel, min, max);
+        else
+            the_app.buffer.sample_amplitude(channel, start_frame, end_frame, max, min);
 
         painter.setPen(color);
         painter.drawLine(x, project_y(max, y0, y1), x, project_y(min, y0, y1));
