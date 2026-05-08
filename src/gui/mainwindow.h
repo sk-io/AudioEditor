@@ -43,6 +43,7 @@ private slots:
     void on_actionViewSpectrogram_triggered();
     void on_actionNormalize_triggered();
     void on_actionLoop_toggled(bool checked);
+    void on_actionResetView_triggered();
 
 private:
     enum class Action {

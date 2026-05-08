@@ -68,12 +68,6 @@ MainWindow::MainWindow(QWidget* parent) :
 		}
 	});
 
-	QShortcut* resetViewShortcut = new QShortcut(QKeySequence(Qt::Key_Z), this);
-	connect(resetViewShortcut, &QShortcut::activated, this, [this]() {
-		// TODO: refactor
-		m_audio_widget->reset_view();
-	});
-
     update_status_bar();
     update_title();
 }
@@ -225,6 +219,10 @@ void MainWindow::on_actionNormalize_triggered() {
 
 void MainWindow::on_actionLoop_toggled(bool checked) {
     the_app.interface.m_loop = checked;
+}
+
+void MainWindow::on_actionResetView_triggered() {
+	m_audio_widget->reset_view();
 }
 
 void MainWindow::load_from_file(const QString& path) {
