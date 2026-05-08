@@ -52,7 +52,60 @@ void AudioWidget::paintEvent(QPaintEvent* event) {
     }
 }
 
-void AudioWidget::draw_waveform_channel(int channel, QPainter& painter, int x0, int x1, int y0, int y1, const QColor& color) {
+void AudioWidget::draw_waveform_stereo(QPainter& painter, int x0, int x1, int y0, int y1) {
+    double frames_per_pixel = (the_app.buffer.get_sample_rate() / m_pixels_per_second);
+
+    const WaveformVisual& waveform = the_app.waveform;
+	const QColor& left_color = Qt::red;
+	const QColor& right_color = Qt::green;
+	const QColor& combined_color = Qt::white;
+//	const QColor left_color("#00D1FF");
+//	const QColor right_color("#FF2DA6");
+//	const QColor combined_color("#FFFFFF");
+
+    int level_i = waveform.find_best_level(frames_per_pixel);
+
+    for (int x = x0; x < x1; x++) {
+        double time = x / m_pixels_per_second + m_scroll_pos;
+        if (time < 0 || time >= the_app.buffer.get_duration())
+            continue;
+
+        int64_t start_frame = the_app.buffer.get_frame(time);
+        int64_t end_frame = start_frame + the_app.buffer.get_frame(1.0 / m_pixels_per_second);
+
+		float left_min, left_max;
+		float right_min, right_max;
+
+		if (level_i >= 0) {
+			waveform.sample(start_frame, end_frame, level_i, 0, left_min, left_max);
+			waveform.sample(start_frame, end_frame, level_i, 1, right_min, right_max);
+		} else {
+			the_app.buffer.sample_amplitude(0, start_frame, end_frame, left_max, left_min);
+			the_app.buffer.sample_amplitude(1, start_frame, end_frame, right_max, right_min);
+		}
+
+		int left_y0 = project_y(left_max, y0, y1);
+		int left_y1 = project_y(left_min, y0, y1);
+		
+		int right_y0 = project_y(right_max, y0, y1);
+		int right_y1 = project_y(right_min, y0, y1);
+
+        painter.setPen(left_color);
+        painter.drawLine(x, left_y0, x, left_y1);
+        painter.setPen(right_color);
+        painter.drawLine(x, right_y0, x, right_y1);
+
+		if (left_y1 < right_y0)
+			continue;
+		if (right_y0 > left_y1)
+			continue;
+
+		painter.setPen(combined_color);
+		painter.drawLine(x, std::max(left_y0, right_y0), x, std::min(left_y1, right_y1));
+    }
+}
+
+void AudioWidget::draw_waveform_mono(int channel, QPainter& painter, int x0, int x1, int y0, int y1, const QColor& color) {
     double frames_per_pixel = (the_app.buffer.get_sample_rate() / m_pixels_per_second);
 
     const WaveformVisual& waveform = the_app.waveform;
@@ -85,21 +138,14 @@ void AudioWidget::draw_single_view() {
     QRect view_rect(rect());
     view_rect.setTop(m_timeline_height);
 
-    // region selection
-    if (m_selection_state == SelectionState::REGION) {
-        int x0 = project_x(get_selection_start_time());
-        int x1 = project_x(get_selection_end_time());
 
-        int w = x1 - x0 + 1;
-
-        painter.fillRect(x0, view_rect.top(), w, view_rect.height(), Qt::darkBlue);
-    }
-
-    // draw start line
+    // draw start/end lines
     {
-        int x = project_x(0);
+        int start_x = view_rect.left() + project_x(0);
+        int end_x   = view_rect.left() + project_x(the_app.buffer.get_duration());
         painter.setPen(Qt::darkGray);
-        painter.drawLine(view_rect.left() + x, view_rect.top(), view_rect.left() + x, view_rect.bottom());
+        painter.drawLine(start_x, view_rect.top(), start_x, view_rect.bottom());
+        painter.drawLine(end_x, view_rect.top(), end_x, view_rect.bottom());
     }
 
     // marker selection
@@ -109,11 +155,6 @@ void AudioWidget::draw_single_view() {
         painter.drawLine(x, view_rect.top(), x, view_rect.bottom());
     }
 
-    // center line
-    {
-        painter.setPen(Qt::lightGray);
-        painter.drawLine(view_rect.left(), view_rect.center().y(), view_rect.right(), view_rect.center().y());
-    }
 
     // draw playback line
     if (the_app.interface.m_state != AudioInterface::State::IDLE) {
@@ -124,11 +165,34 @@ void AudioWidget::draw_single_view() {
     }
 
     const AudioBuffer& buffer = the_app.buffer;
+	bool stereo = buffer.get_num_channels() == 2;
 
-    draw_waveform_channel(0, painter, view_rect.left(), view_rect.right(), view_rect.top(), view_rect.bottom(), Qt::red);
+	painter.setPen(Qt::white);
+	painter.drawText(5, 38, stereo ? "Stereo" : "Mono");
 
-    if (the_app.buffer.get_num_channels() == 2)
-        draw_waveform_channel(1, painter, view_rect.left(), view_rect.right(), view_rect.top(), view_rect.bottom(), Qt::green);
+	// draw the actual waveform
+    if (stereo) {
+        draw_waveform_stereo(painter, view_rect.left(), view_rect.right(), view_rect.top(), view_rect.bottom());
+	} else {
+		draw_waveform_mono(0, painter, view_rect.left(), view_rect.right(), view_rect.top(), view_rect.bottom(), Qt::red);
+	}
+
+    // center line
+    {
+        painter.setPen(QColor(0, 0, 0, 30));
+        painter.drawLine(view_rect.left(), view_rect.center().y(), view_rect.right(), view_rect.center().y());
+    }
+
+    // region selection
+    if (m_selection_state == SelectionState::REGION) {
+		const QColor color(100, 100, 255, 120);
+        int x0 = project_x(get_selection_start_time());
+        int x1 = project_x(get_selection_end_time());
+
+        int w = x1 - x0 + 1;
+
+        painter.fillRect(x0, view_rect.top(), w, view_rect.height(), color);
+    }
 
     draw_timeline(0, m_timeline_height);
 }
@@ -150,11 +214,13 @@ void AudioWidget::draw_split_view() {
         painter.fillRect(x0, view_rect.top(), w, view_rect.height(), Qt::darkBlue);
     }
 
-    // draw start line
+    // draw start/end lines
     {
-        int x = project_x(0);
+        int start_x = view_rect.left() + project_x(0);
+        int end_x   = view_rect.left() + project_x(the_app.buffer.get_duration());
         painter.setPen(Qt::darkGray);
-        painter.drawLine(view_rect.left() + x, view_rect.top(), view_rect.left() + x, view_rect.bottom());
+        painter.drawLine(start_x, view_rect.top(), start_x, view_rect.bottom());
+        painter.drawLine(end_x, view_rect.top(), end_x, view_rect.bottom());
     }
 
     // marker selection
@@ -172,12 +238,6 @@ void AudioWidget::draw_split_view() {
 
     int channel_height = view_rect.height() / 2;
 
-    // channel center lines
-    {
-        painter.setPen(Qt::lightGray);
-        painter.drawLine(view_rect.left(), view_rect.center().y() - channel_height / 2, view_rect.right(), view_rect.center().y() - channel_height / 2);
-        painter.drawLine(view_rect.left(), view_rect.center().y() + channel_height / 2, view_rect.right(), view_rect.center().y() + channel_height / 2);
-    }
 
     // draw playback line
     if (the_app.interface.m_state != AudioInterface::State::IDLE) {
@@ -187,10 +247,21 @@ void AudioWidget::draw_split_view() {
         painter.drawLine(view_rect.left() + x, view_rect.top(), view_rect.left() + x, view_rect.bottom());
     }
 
-    draw_waveform_channel(0, painter, view_rect.left(), view_rect.right(), view_rect.top(), view_rect.center().y(), Qt::red);
+    draw_waveform_mono(0, painter, view_rect.left(), view_rect.right(), view_rect.top(), view_rect.center().y(), Qt::red);
 
     if (the_app.buffer.get_num_channels() == 2)
-        draw_waveform_channel(1, painter, view_rect.left(), view_rect.right(), view_rect.center().y(), view_rect.bottom(), Qt::green);
+        draw_waveform_mono(1, painter, view_rect.left(), view_rect.right(), view_rect.center().y(), view_rect.bottom(), Qt::green);
+
+	painter.setPen(Qt::white);
+	painter.drawText(5, 38, "Left");
+	painter.drawText(5, view_rect.center().y() + 16, "Right");
+
+    // channel center lines
+    {
+        painter.setPen(QColor(0, 0, 0, 30));
+        painter.drawLine(view_rect.left(), view_rect.center().y() - channel_height / 2, view_rect.right(), view_rect.center().y() - channel_height / 2);
+        painter.drawLine(view_rect.left(), view_rect.center().y() + channel_height / 2, view_rect.right(), view_rect.center().y() + channel_height / 2);
+    }
 
     draw_timeline(0, m_timeline_height);
 }
@@ -232,6 +303,7 @@ bool AudioWidget::event(QEvent* event) {
         m_mouse_x = mouse->pos().x() - rect().left();
         m_mouse_pos = m_scroll_pos + m_mouse_x / m_pixels_per_second;
         m_mouse_pos = std::max(m_mouse_pos, 0.0);
+        m_mouse_pos = std::min(m_mouse_pos, the_app.buffer.get_duration());
 
         if (m_state == State::SCROLLING) {
             m_scroll_pos = m_drag_start_scroll_pos - (m_mouse_x - m_drag_start_mouse_x) / m_pixels_per_second;
@@ -319,11 +391,7 @@ bool AudioWidget::event(QEvent* event) {
 
             double lerp_val = m_mouse_x / (double) rect().width();
 
-            m_zoom += wheel->angleDelta().y() * 0.01;
-            m_zoom = fmin(50, m_zoom);
-            m_zoom = fmax(0.001, m_zoom);
-
-            m_pixels_per_second = pow(1.5, m_zoom);
+            set_zoom(m_zoom + wheel->angleDelta().y() * 0.01);
 
             double new_width_seconds = rect().width() / m_pixels_per_second;
             double scroll_max = old_scroll_right_pos - new_width_seconds;
@@ -353,4 +421,26 @@ int AudioWidget::project_x(double time) const {
 
 int AudioWidget::project_y(float amplitude, int y0, int y1) const {
     return y0 + (int)((-amplitude + 1.0f) / 2.0f * (float)(y1 - y0));
+}
+
+void AudioWidget::set_zoom(double zoom) {
+	zoom = fmin(50, zoom);
+	zoom = fmax(0.001, zoom);
+
+	m_zoom = zoom;
+	m_pixels_per_second = pow(1.5, m_zoom);
+}
+
+void AudioWidget::reset_view() {
+	m_scroll_pos = 0;
+
+	double zoom = 12;
+	if (the_app.buffer.get_num_frames() > 0) {
+		int widget_width = rect().width();
+		double duration = the_app.buffer.get_duration();
+		zoom = log(widget_width / duration) / log(1.5);
+	}
+	set_zoom(zoom);
+
+	update();
 }

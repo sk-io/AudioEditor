@@ -10,6 +10,7 @@
 #include <QDragEnterEvent>
 #include <QDropEvent>
 #include <QActionGroup>
+#include <QShortcut>
 
 MainWindow::MainWindow(QWidget* parent) :
     QMainWindow(parent), ui(new Ui::MainWindow) {
@@ -24,19 +25,6 @@ MainWindow::MainWindow(QWidget* parent) :
     ui->statusbar->addPermanentWidget(m_mouse_info);
     ui->statusbar->addPermanentWidget(m_file_info);
     ui->toolBar->addSeparator();
-
-    // {
-    //     // API combo box
-    //     QComboBox* api_box = new QComboBox();
-    //     for (int i = 0; i < the_app.interface.get_num_apis(); i++) {
-    //         api_box->addItem(the_app.interface.get_api_name(i));
-    //     }
-    //     connect(api_box, &QComboBox::currentIndexChanged, this, [this](int index) {
-    //         the_app.interface.set_api(index);
-    //     });
-
-    //     ui->toolBar->addWidget(api_box);
-    // }
 
     {
         // input device box
@@ -68,6 +56,24 @@ MainWindow::MainWindow(QWidget* parent) :
 
     ui->actionViewSpectrogram->setEnabled(false);
 
+	QShortcut* switchViewShortcut = new QShortcut(QKeySequence("Tab"), this);
+	connect(switchViewShortcut, &QShortcut::activated, this, [this]() {
+		// TODO: refactor
+		if (m_audio_widget->m_view == AudioWidget::ViewMode::OVERLAPPED) {
+			m_audio_widget->set_view_mode(AudioWidget::ViewMode::SPLIT_CHANNEL);
+			ui->actionViewSplit->setChecked(true);
+		} else {
+			m_audio_widget->set_view_mode(AudioWidget::ViewMode::OVERLAPPED);
+			ui->actionViewSingle->setChecked(true);
+		}
+	});
+
+	QShortcut* resetViewShortcut = new QShortcut(QKeySequence(Qt::Key_Z), this);
+	connect(resetViewShortcut, &QShortcut::activated, this, [this]() {
+		// TODO: refactor
+		m_audio_widget->reset_view();
+	});
+
     update_status_bar();
     update_title();
 }
@@ -79,9 +85,8 @@ MainWindow::~MainWindow() {
 void MainWindow::update_status_bar() {
     // TODO: reorganize
     QString str =
-        QString("Length: %1s %2 %3Hz")
+        QString("Length: %1s %3Hz")
         .arg(the_app.buffer.get_duration())
-        .arg(the_app.buffer.get_num_channels() == 2 ? "Stereo" : "Mono")
         .arg(the_app.buffer.get_sample_rate());
     m_file_info->setText(str);
     m_mouse_info->setText(QString("Time: %1s").arg(m_audio_widget->get_mouse_pos()));
@@ -236,6 +241,7 @@ void MainWindow::load_from_file(const QString& path) {
     update_status_bar();
     update_title();
     m_audio_widget->deselect();
+	m_audio_widget->reset_view();
     m_audio_widget->update();
 }
 
@@ -302,6 +308,7 @@ void MainWindow::perform_action(Action action) {
         the_app.buffer.copy_region(start, end, temp);
         the_app.buffer = std::move(temp);
         the_app.unsaved_changes = true;
+		m_audio_widget->reset_view();
         break;
     }
     case Action::NORMALIZE:
