@@ -7,6 +7,9 @@
 #include <QMouseEvent>
 #include <algorithm>
 
+// how many pixels wide does a sample have to be to switch to graph mode?
+const double graph_pixel_threshold = 0.5;
+
 AudioWidget::AudioWidget(QWidget* parent) : QWidget{parent} {
     setMouseTracking(true);
     setAutoFillBackground(true);
@@ -53,15 +56,25 @@ void AudioWidget::paintEvent(QPaintEvent* event) {
 }
 
 void AudioWidget::draw_waveform_stereo(QPainter& painter, int x0, int x1, int y0, int y1) {
-    double frames_per_pixel = (the_app.buffer.get_sample_rate() / m_pixels_per_second);
+	const AudioBuffer& buffer = the_app.buffer;
+    double frames_per_pixel = buffer.get_sample_rate() / m_pixels_per_second;
+    double pixels_per_frame = m_pixels_per_second / buffer.get_sample_rate();
+	//qDebug() << frames_per_pixel;
 
     const WaveformVisual& waveform = the_app.waveform;
 	const QColor& left_color = Qt::red;
 	const QColor& right_color = Qt::green;
-	const QColor& combined_color = Qt::white;
+	//const QColor& combined_color = Qt::white;
+	const QColor& combined_color = QColor(180, 255, 120);
+
 //	const QColor left_color("#00D1FF");
 //	const QColor right_color("#FF2DA6");
 //	const QColor combined_color("#FFFFFF");
+	if (pixels_per_frame >= graph_pixel_threshold) {
+		draw_waveform_graph(0, painter, x0, x1, y0, y1, left_color);
+		draw_waveform_graph(1, painter, x0, x1, y0, y1, right_color);
+		return;
+	}
 
     int level_i = waveform.find_best_level(frames_per_pixel);
 
@@ -99,6 +112,8 @@ void AudioWidget::draw_waveform_stereo(QPainter& painter, int x0, int x1, int y0
 			continue;
 		if (right_y0 > left_y1)
 			continue;
+		if (frames_per_pixel <= 10.0)
+			continue;
 
 		painter.setPen(combined_color);
 		painter.drawLine(x, std::max(left_y0, right_y0), x, std::min(left_y1, right_y1));
@@ -106,11 +121,18 @@ void AudioWidget::draw_waveform_stereo(QPainter& painter, int x0, int x1, int y0
 }
 
 void AudioWidget::draw_waveform_mono(int channel, QPainter& painter, int x0, int x1, int y0, int y1, const QColor& color) {
-    double frames_per_pixel = (the_app.buffer.get_sample_rate() / m_pixels_per_second);
+	const AudioBuffer& buffer = the_app.buffer;
+    double frames_per_pixel = buffer.get_sample_rate() / m_pixels_per_second;
+    double pixels_per_frame = m_pixels_per_second / buffer.get_sample_rate();
 
     const WaveformVisual& waveform = the_app.waveform;
 
     int level_i = waveform.find_best_level(frames_per_pixel);
+
+	if (pixels_per_frame >= graph_pixel_threshold) {
+		draw_waveform_graph(channel, painter, x0, x1, y0, y1, color);
+		return;
+	}
 
     for (int x = x0; x < x1; x++) {
         double time = x / m_pixels_per_second + m_scroll_pos;
@@ -129,6 +151,34 @@ void AudioWidget::draw_waveform_mono(int channel, QPainter& painter, int x0, int
         painter.setPen(color);
         painter.drawLine(x, project_y(max, y0, y1), x, project_y(min, y0, y1));
     }
+}
+
+void AudioWidget::draw_waveform_graph(int channel, QPainter& painter, int x0, int x1, int y0, int y1, const QColor& color) {
+	const AudioBuffer& buffer = the_app.buffer;
+    double pixels_per_frame = m_pixels_per_second / buffer.get_sample_rate();
+
+	int64_t x0_frame = buffer.clamp_frame(buffer.get_frame(m_scroll_pos));
+	double x1_time = (x1 - x0) / m_pixels_per_second + m_scroll_pos;
+	int64_t x1_frame = buffer.clamp_frame(buffer.get_frame(x1_time) + 2);
+
+	const int grabber_size = 10;
+
+	painter.setPen(color);
+	int prev_x = -1, prev_y = -1;
+	for (int64_t f = x0_frame; f < x1_frame; f++) {
+		double time = buffer.get_time(f);
+        int x = (time - m_scroll_pos) * m_pixels_per_second;
+		int y = project_y(buffer.single_sample(f, channel), y0, y1);
+		
+		if (prev_y != -1)
+			painter.drawLine(prev_x, prev_y, x, y);
+
+		if (pixels_per_frame > grabber_size * 1.5)
+			painter.drawRect(x - grabber_size / 2, y - grabber_size / 2, grabber_size, grabber_size);
+
+		prev_x = x;
+		prev_y = y;
+	}
 }
 
 void AudioWidget::draw_single_view() {
@@ -432,15 +482,16 @@ void AudioWidget::set_zoom(double zoom) {
 }
 
 void AudioWidget::reset_view() {
-	m_scroll_pos = 0;
+	const int margin = 50;
 
 	double zoom = 12;
 	if (the_app.buffer.get_num_frames() > 0) {
-		int widget_width = rect().width();
+		int pixel_width = rect().width() - margin * 2;
 		double duration = the_app.buffer.get_duration();
-		zoom = log(widget_width / duration) / log(1.5);
+		zoom = log(pixel_width / duration) / log(1.5);
 	}
 	set_zoom(zoom);
+	m_scroll_pos = -margin / m_pixels_per_second;
 
 	update();
 }

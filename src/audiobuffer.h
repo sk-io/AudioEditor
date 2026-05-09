@@ -31,14 +31,20 @@ public:
     double get_time(int64_t frame_pos) const { return frame_pos / (double)m_sample_rate; }
     bool is_stereo() const { return m_num_channels == 2; }
     const std::vector<float>& get_samples() const { return m_samples; }
+	float single_sample(int64_t frame, int channel) const {
+		return m_samples[clamp_frame(frame) * 2 + channel];
+	}
 
     float* get_raw_pointer() {
         return m_samples.size() == 0 ? nullptr : &m_samples[0];
     }
 
+	int64_t clamp_frame(int64_t frame) const {
+		return std::max((int64_t) 0, std::min(m_num_frames - 1, frame));
+	}
+
 private:
     void on_length_changed();
-    int64_t limit_bounds(int64_t frame_pos) const;
 
 private:
     std::vector<float> m_samples; // stereo has 2 floats per sample, interleaved

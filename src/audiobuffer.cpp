@@ -122,8 +122,8 @@ void AudioBuffer::sample_amplitude(int channel, int64_t start, int64_t end, floa
 
 bool AudioBuffer::delete_region(int64_t start, int64_t end) {
     Q_ASSERT(start < end);
-    start = limit_bounds(start);
-    end = limit_bounds(end);
+    start = clamp_frame(start);
+    end = clamp_frame(end);
     if (start == end)
         return false;
 
@@ -144,8 +144,8 @@ void AudioBuffer::insert_silence(int64_t where, int64_t num_frames) {
 }
 
 void AudioBuffer::normalize_region(int64_t start, int64_t end) {
-    start = limit_bounds(start);
-    end = limit_bounds(end);
+    start = clamp_frame(start);
+    end = clamp_frame(end);
 
     if (start >= end)
         return;
@@ -169,8 +169,8 @@ void AudioBuffer::normalize_region(int64_t start, int64_t end) {
 
 void AudioBuffer::amplify_region(int channel, int64_t start, int64_t end, float amp) {
     Q_ASSERT(start < end);
-    start = limit_bounds(start);
-    end = limit_bounds(end);
+    start = clamp_frame(start);
+    end = clamp_frame(end);
 
     for (int64_t i = start; i < end; i++) {
         int64_t index = i * m_num_channels + channel;
@@ -185,8 +185,8 @@ void AudioBuffer::amplify_region(int channel, int64_t start, int64_t end, float 
 
 bool AudioBuffer::copy_region(int64_t start, int64_t end, AudioBuffer& to) const {
     Q_ASSERT(start < end);
-    start = limit_bounds(start);
-    end = limit_bounds(end);
+    start = clamp_frame(start);
+    end = clamp_frame(end);
     if (start == end)
         return false;
 
@@ -201,8 +201,8 @@ bool AudioBuffer::copy_region(int64_t start, int64_t end, AudioBuffer& to) const
 
 bool AudioBuffer::cut_region(int64_t start, int64_t end, AudioBuffer& to) {
     Q_ASSERT(start < end);
-    start = limit_bounds(start);
-    end = limit_bounds(end);
+    start = clamp_frame(start);
+    end = clamp_frame(end);
     if (start == end)
         return false;
 
@@ -226,8 +226,4 @@ bool AudioBuffer::paste_from(int64_t where, const AudioBuffer& from) {
 void AudioBuffer::on_length_changed() {
     m_num_frames = m_samples.size() / m_num_channels;
     m_total_duration = m_num_frames / (double) m_sample_rate;
-}
-
-int64_t AudioBuffer::limit_bounds(int64_t frame_pos) const {
-    return std::max(std::min(frame_pos, m_num_frames), (int64_t) 0);
 }
