@@ -41,12 +41,12 @@ private:
     void draw_waveform_stereo(QPainter& painter, int x0, int x1, int y0, int y1);
     void draw_waveform_mono(int channel, QPainter& painter, int x0, int x1, int y0, int y1, const QColor& color);
 	void draw_waveform_graph(int channel, QPainter& painter, int x0, int x1, int y0, int y1, const QColor& color);
-    void draw_single_view();
-    void draw_split_view();
-    void draw_timeline(int y0, int y1);
+    void draw_single_view(QPainter& painter);
+    void draw_split_view(QPainter& painter);
+    void draw_timeline(QPainter& painter, int y0, int y1);
     bool event(QEvent *event);
-    int project_x(double time) const;
-    int project_y(float amplitude, int y0, int y1) const;
+    double project_x(double time) const;
+    double project_y(double amplitude, int y0, int y1) const;
 	void set_zoom(double zoom);
 	void reset_view();
 

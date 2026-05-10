@@ -8,9 +8,8 @@
 class AudioBuffer {
 public:
     AudioBuffer();
-    AudioBuffer(int num_channels, int sample_rate, std::vector<float>&& samples);
 
-    void init(int num_channels, int sample_rate);
+    void init(int num_channels, int sample_rate, std::vector<float>&& samples = {});
     bool load_from_file(const QString& path);
     bool save_to_file(const QString& path);
     void sample_amplitude(int channel, int64_t start, int64_t end, float& out_max, float& out_min) const;

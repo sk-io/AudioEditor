@@ -4,6 +4,7 @@
 #include "audiobuffer.h"
 #include "audiointerface.h"
 #include "waveformvisual.h"
+#include "file_io.h"
 
 #include <QString>
 
@@ -12,6 +13,7 @@ class MainWindow;
 struct App {
     AudioBuffer buffer;
     AudioBuffer clipboard;
+	FileIO io;
     std::vector<AudioBuffer> history;
     MainWindow* main_window;
     QString file_path;

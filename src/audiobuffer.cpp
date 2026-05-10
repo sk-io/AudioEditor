@@ -1,6 +1,5 @@
 #include "audiobuffer.h"
 #include "app.h"
-#include <sndfile.h>
 #include <stdint.h>
 #include <algorithm>
 #include <QFileInfo>
@@ -9,90 +8,77 @@
 
 AudioBuffer::AudioBuffer() {}
 
-AudioBuffer::AudioBuffer(int num_channels, int sample_rate, std::vector<float>&& samples) :
-    m_num_channels(num_channels), m_sample_rate(sample_rate), m_samples(samples)
-{
-    on_length_changed();
-}
-
-void AudioBuffer::init(int num_channels, int sample_rate) {
+void AudioBuffer::init(int num_channels, int sample_rate, std::vector<float>&& samples) {
     m_num_channels = num_channels;
     m_sample_rate = sample_rate;
-    m_samples.clear();
+    m_samples = std::move(samples);
     on_length_changed();
 }
 
+// TODO: refactor
 bool AudioBuffer::load_from_file(const QString& path) {
-    SF_INFO info;
-    memset(&info, 0, sizeof(info));
+	the_app.io.read(*this, path.toStdString());
+//    SF_INFO info;
+//    memset(&info, 0, sizeof(info));
+//
+//    std::string path_str = path.toStdString();
+//    SNDFILE* file = sf_open(path_str.c_str(), SFM_READ, &info);
+//
+//    if (!file) {
+//        show_error_box("Error opening file: " + QString(sf_strerror(file)));
+//        return false;
+//    }
+//
+//    Q_ASSERT(file);
+//    Q_ASSERT(info.channels > 0 && info.channels <= 2);
+//
+//    m_sample_rate = info.samplerate;
+//    m_num_channels = info.channels;
+//
+//    sf_count_t num_samples = sf_seek(file, 0, SF_SEEK_END) * m_num_channels;
+//    sf_seek(file, 0, SF_SEEK_SET);
+//
+//    m_samples.clear();
+//
+//    if (num_samples > 0) {
+//        float* temp_samples = new float[num_samples];
+//        sf_count_t num_read = sf_read_float(file, temp_samples, num_samples);
+//
+//        if (!num_read) {
+//            qInfo(sf_strerror(file));
+//            Q_ASSERT(false);
+//        }
+//
+//        m_samples.insert(m_samples.begin(), temp_samples, temp_samples + num_samples);
+//    }
+//
+//    sf_close(file);
 
-    std::string path_str = path.toStdString();
-    SNDFILE* file = sf_open(path_str.c_str(), SFM_READ, &info);
 
-    if (!file) {
-        show_error_box("Error opening file: " + QString(sf_strerror(file)));
-        return false;
-    }
-
-    Q_ASSERT(file);
-    Q_ASSERT(info.channels > 0 && info.channels <= 2);
-
-    m_sample_rate = info.samplerate;
-    m_num_channels = info.channels;
-
-    sf_count_t num_samples = sf_seek(file, 0, SF_SEEK_END) * m_num_channels;
-    sf_seek(file, 0, SF_SEEK_SET);
-
-    m_samples.clear();
-
-    if (num_samples > 0) {
-        float* temp_samples = new float[num_samples];
-        sf_count_t num_read = sf_read_float(file, temp_samples, num_samples);
-
-        if (!num_read) {
-            qInfo(sf_strerror(file));
-            Q_ASSERT(false);
-        }
-
-        m_samples.insert(m_samples.begin(), temp_samples, temp_samples + num_samples);
-    }
-
-    sf_close(file);
     on_length_changed();
     return true;
 }
 
 bool AudioBuffer::save_to_file(const QString& path) {
-    // TODO: proper error handling
-    SF_INFO info;
-    memset(&info, 0, sizeof(info));
-
-    // TODO: allow for customizing parameters like bitrate, format, etc.
     QFileInfo file_info(path);
     QString suffix = file_info.completeSuffix();
     if (suffix == "wav") {
-        info.format = SF_FORMAT_WAV | SF_FORMAT_PCM_24;
     } else if (suffix == "mp3") {
-        info.format = SF_FORMAT_MPEG_LAYER_III | SF_FORMAT_PCM_24;
     } else if (suffix == "ogg") {
-        info.format = SF_FORMAT_OGG | SF_FORMAT_PCM_24;
     } else {
+		qDebug() << "cant determine output format";
         Q_ASSERT(false);
     }
 
-    info.samplerate = m_sample_rate;
-    info.channels = m_num_channels;
+	the_app.io.write(*this, path.toStdString(), FileIO::FORMAT_MP3);
+//    if (!file) {
+//        show_error_box(QString("Error (%1) opening file for writing: %2")
+//			.arg(sf_error(NULL))
+//			.arg(QString(sf_strerror(file)))
+//		);
+//        return false;
+//    }
 
-    std::string path_str = path.toStdString();
-    SNDFILE* file = sf_open(path_str.c_str(), SFM_WRITE, &info);
-    Q_ASSERT(file);
-
-    if (m_num_frames > 0) {
-        sf_count_t num_written = sf_write_float(file, &m_samples[0], m_samples.size());
-        Q_ASSERT(num_written == m_samples.size());
-    }
-
-    sf_close(file);
     return true;
 }
 

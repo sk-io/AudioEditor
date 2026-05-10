@@ -20,7 +20,8 @@ int run_app(int argc, char* argv[]) {
     the_app.main_window = &window;
     window.show();
 
-    if (app.arguments().length() >= 2 && QFile::exists(app.arguments().at(1))) {
+    if (app.arguments().length() >= 2) {
+		//if (QFile::exists(app.arguments().at(1))) {
         window.load_from_file(app.arguments().at(1));
     }
 

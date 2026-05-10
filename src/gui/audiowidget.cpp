@@ -43,12 +43,16 @@ double AudioWidget::get_selection_end_time() const {
 }
 
 void AudioWidget::paintEvent(QPaintEvent* event) {
+	QPainter painter(this);
+	painter.setRenderHint(QPainter::Antialiasing, false);
+	//painter.translate(0.5, 0.5);
+
     switch (m_view) {
     case ViewMode::OVERLAPPED:
-        draw_single_view();
+        draw_single_view(painter);
         break;
     case ViewMode::SPLIT_CHANNEL:
-        draw_split_view();
+        draw_split_view(painter);
         break;
     default:
         Q_ASSERT(false);
@@ -181,8 +185,7 @@ void AudioWidget::draw_waveform_graph(int channel, QPainter& painter, int x0, in
 	}
 }
 
-void AudioWidget::draw_single_view() {
-    QPainter painter(this);
+void AudioWidget::draw_single_view(QPainter& painter) {
     painter.fillRect(rect(), Qt::black);
 
     QRect view_rect(rect());
@@ -244,11 +247,10 @@ void AudioWidget::draw_single_view() {
         painter.fillRect(x0, view_rect.top(), w, view_rect.height(), color);
     }
 
-    draw_timeline(0, m_timeline_height);
+    draw_timeline(painter, 0, m_timeline_height);
 }
 
-void AudioWidget::draw_split_view() {
-    QPainter painter(this);
+void AudioWidget::draw_split_view(QPainter& painter) {
     painter.fillRect(rect(), Qt::black);
 
     QRect view_rect(rect());
@@ -288,7 +290,6 @@ void AudioWidget::draw_split_view() {
 
     int channel_height = view_rect.height() / 2;
 
-
     // draw playback line
     if (the_app.interface.m_state != AudioInterface::State::IDLE) {
         uint64_t pos = the_app.interface.m_frame_pos;
@@ -313,12 +314,10 @@ void AudioWidget::draw_split_view() {
         painter.drawLine(view_rect.left(), view_rect.center().y() + channel_height / 2, view_rect.right(), view_rect.center().y() + channel_height / 2);
     }
 
-    draw_timeline(0, m_timeline_height);
+    draw_timeline(painter, 0, m_timeline_height);
 }
 
-void AudioWidget::draw_timeline(int y0, int y1) {
-    QPainter painter(this);
-
+void AudioWidget::draw_timeline(QPainter& painter, int y0, int y1) {
     painter.fillRect(0, y0, rect().width(), y1 - y0, Qt::darkBlue);
 
     const int max_tick_width = 30;
@@ -334,13 +333,14 @@ void AudioWidget::draw_timeline(int y0, int y1) {
     int num_ticks = width() / tick_width + 2;
 
     for (int i = tick0; i < tick0 + num_ticks; i++) {
-        if (i < 0)
-            continue;
+        double x = project_x(i * mul);
+		QRectF rect(x - tick_width, y0, tick_width * 2, m_timeline_height);
 
-        int x = project_x(i * mul);
-
-        if (i % 2 == 0)
-            painter.drawText(QPoint(x - 2, 15), tr("%1").arg(i * mul));
+        if (i % 2 == 0) {
+            painter.drawText(rect, Qt::AlignCenter, tr("%1").arg(i * mul));
+			const QBrush& color = (i / 2 % 2 == 0) ? Qt::red : Qt::green;
+			//painter.fillRect(rect, color);
+		}
 
         painter.drawLine(x, m_timeline_height - 3, x, m_timeline_height - 1);
     }
@@ -465,12 +465,12 @@ bool AudioWidget::event(QEvent* event) {
     return QWidget::event(event);
 }
 
-int AudioWidget::project_x(double time) const {
-    return (int) ((time - m_scroll_pos) * m_pixels_per_second);
+double AudioWidget::project_x(double time) const {
+    return (time - m_scroll_pos) * m_pixels_per_second;
 }
 
-int AudioWidget::project_y(float amplitude, int y0, int y1) const {
-    return y0 + (int)((-amplitude + 1.0f) / 2.0f * (float)(y1 - y0));
+double AudioWidget::project_y(double amplitude, int y0, int y1) const {
+    return y0 + (-amplitude + 1.0) / 2.0 * (double)(y1 - y0);
 }
 
 void AudioWidget::set_zoom(double zoom) {
