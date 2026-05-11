@@ -21,7 +21,6 @@ int run_app(int argc, char* argv[]) {
     window.show();
 
     if (app.arguments().length() >= 2) {
-		//if (QFile::exists(app.arguments().at(1))) {
         window.load_from_file(app.arguments().at(1));
     }
 
@@ -42,6 +41,7 @@ void undo_state() {
 
 void show_error_box(const QString& msg) {
     qDebug() << "ERROR: " << msg;
+	exit(1);
     QMessageBox box;
     box.critical(the_app.main_window, "Error", msg);
 }

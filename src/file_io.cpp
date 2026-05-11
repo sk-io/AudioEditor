@@ -23,7 +23,6 @@ static void print_error_msg(int err) {
 	std::cout << "ffmpeg error msg: " << buf << std::endl;
 }
 
-
 bool FileIO::read(AudioBuffer& buffer, const std::string& path) {
 	int ret;
 
@@ -48,6 +47,8 @@ bool FileIO::read(AudioBuffer& buffer, const std::string& path) {
 		0
 	);
 
+	std::cout << "chose stream " << stream_index << "\n";
+
 	if (stream_index < 0) {
 		show_error_box("could not find a valid audio stream");
 		return false;
@@ -56,27 +57,33 @@ bool FileIO::read(AudioBuffer& buffer, const std::string& path) {
 	AVStream* stream = format_ctx->streams[stream_index];
 	AVCodecParameters* params = stream->codecpar;
 
-	AVCodecContext* codec_ctx = avcodec_alloc_context3(codec);
-	ret = avcodec_open2(codec_ctx, codec, NULL);
-	if (ret < 0) {
-		show_error_box("dasjdnfnjdf");
+	int sample_rate = params->sample_rate;
+	int channels = params->ch_layout.nb_channels;
+
+	if (channels < 0 || channels > 2) {
+		show_error_box("invalid number of channels");
 		return false;
 	}
 
-	avcodec_parameters_to_context(codec_ctx, params);
-
-	AVChannelLayout decode_layout;
-	av_channel_layout_copy(&decode_layout, &codec_ctx->ch_layout);
-
 	printf("Codec: %s\n", avcodec_get_name(params->codec_id));
 	printf("Bitrate: %" PRId64 "\n", params->bit_rate);
-	int sample_rate = params->sample_rate;
-	printf("Sample rate: %d Hz\n", codec_ctx->sample_rate);
-	int num_channels = params->ch_layout.nb_channels;
+	printf("Sample rate: %d Hz\n", params->sample_rate);
 	printf("Channels: %d\n", params->ch_layout.nb_channels);
 	char buf[512];
 	av_get_sample_fmt_string(buf, sizeof(buf), (AVSampleFormat) params->format);
 	printf("Sample format: %d (%s)\n", params->format, buf);
+
+	AVCodecContext* codec_ctx = avcodec_alloc_context3(codec);
+	avcodec_parameters_to_context(codec_ctx, params);
+	ret = avcodec_open2(codec_ctx, codec, NULL);
+	if (ret < 0) {
+		print_error_msg(ret);
+		show_error_box("failed to open codec");
+		return false;
+	}
+
+	AVChannelLayout decode_layout;
+	av_channel_layout_copy(&decode_layout, &codec_ctx->ch_layout);
 
 	SwrContext* swr = NULL;
 
@@ -117,8 +124,8 @@ bool FileIO::read(AudioBuffer& buffer, const std::string& path) {
 				break;
 
 			int num_samples = swr_get_out_samples(swr, frame->nb_samples);
-			if (num_samples * 2 > sample_buf.size())
-				sample_buf.resize(num_samples * 2);
+			if (num_samples * channels > sample_buf.size())
+				sample_buf.resize(num_samples * channels);
 
 			uint8_t* arr[1] = {(uint8_t*) sample_buf.data()};
 
@@ -141,14 +148,14 @@ bool FileIO::read(AudioBuffer& buffer, const std::string& path) {
 			output_samples.insert(
 				output_samples.end(),
 				sample_buf.begin(),
-				sample_buf.begin() + num_converted * 2
+				sample_buf.begin() + num_converted * channels
 			);
 		}
 
 		av_packet_unref(packet);
 	}
 
-	buffer.init(2, sample_rate, std::move(output_samples));
+	buffer.init(channels, codec_ctx->sample_rate, std::move(output_samples));
 
 	av_frame_free(&frame);
 	av_packet_free(&packet);
