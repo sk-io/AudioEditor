@@ -17,49 +17,14 @@ void AudioBuffer::init(int num_channels, int sample_rate, std::vector<float>&& s
 
 // TODO: refactor
 bool AudioBuffer::load_from_file(const QString& path) {
-	the_app.io.read(*this, path.toStdString());
-//    SF_INFO info;
-//    memset(&info, 0, sizeof(info));
-//
-//    std::string path_str = path.toStdString();
-//    SNDFILE* file = sf_open(path_str.c_str(), SFM_READ, &info);
-//
-//    if (!file) {
-//        show_error_box("Error opening file: " + QString(sf_strerror(file)));
-//        return false;
-//    }
-//
-//    Q_ASSERT(file);
-//    Q_ASSERT(info.channels > 0 && info.channels <= 2);
-//
-//    m_sample_rate = info.samplerate;
-//    m_num_channels = info.channels;
-//
-//    sf_count_t num_samples = sf_seek(file, 0, SF_SEEK_END) * m_num_channels;
-//    sf_seek(file, 0, SF_SEEK_SET);
-//
-//    m_samples.clear();
-//
-//    if (num_samples > 0) {
-//        float* temp_samples = new float[num_samples];
-//        sf_count_t num_read = sf_read_float(file, temp_samples, num_samples);
-//
-//        if (!num_read) {
-//            qInfo(sf_strerror(file));
-//            Q_ASSERT(false);
-//        }
-//
-//        m_samples.insert(m_samples.begin(), temp_samples, temp_samples + num_samples);
-//    }
-//
-//    sf_close(file);
-
+	bool result = the_app.io.read(*this, path.toStdString());
 
     on_length_changed();
-    return true;
+    return result;
 }
 
 bool AudioBuffer::save_to_file(const QString& path) {
+	/*
     QFileInfo file_info(path);
     QString suffix = file_info.completeSuffix();
     if (suffix == "wav") {
@@ -69,17 +34,9 @@ bool AudioBuffer::save_to_file(const QString& path) {
 		qDebug() << "cant determine output format";
         Q_ASSERT(false);
     }
+	*/
 
-	the_app.io.write(*this, path.toStdString(), FileIO::FORMAT_MP3);
-//    if (!file) {
-//        show_error_box(QString("Error (%1) opening file for writing: %2")
-//			.arg(sf_error(NULL))
-//			.arg(QString(sf_strerror(file)))
-//		);
-//        return false;
-//    }
-
-    return true;
+    return the_app.io.write(*this, path.toStdString(), FileIO::FORMAT_MP3);
 }
 
 void AudioBuffer::sample_amplitude(int channel, int64_t start, int64_t end, float& out_max, float& out_min) const {

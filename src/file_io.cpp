@@ -15,6 +15,13 @@ extern "C" {
 }
 
 #include <iostream>
+#include <algorithm>
+
+static void print_error_msg(int err) {
+	char buf[AV_ERROR_MAX_STRING_SIZE];
+	av_strerror(err, buf, sizeof(buf));
+	std::cout << "ffmpeg error msg: " << buf << std::endl;
+}
 
 
 bool FileIO::read(AudioBuffer& buffer, const std::string& path) {
@@ -64,25 +71,36 @@ bool FileIO::read(AudioBuffer& buffer, const std::string& path) {
 	printf("Codec: %s\n", avcodec_get_name(params->codec_id));
 	printf("Bitrate: %" PRId64 "\n", params->bit_rate);
 	int sample_rate = params->sample_rate;
-	printf("Sample rate: %d Hz\n", sample_rate);
+	printf("Sample rate: %d Hz\n", codec_ctx->sample_rate);
 	int num_channels = params->ch_layout.nb_channels;
 	printf("Channels: %d\n", params->ch_layout.nb_channels);
 	char buf[512];
 	av_get_sample_fmt_string(buf, sizeof(buf), (AVSampleFormat) params->format);
 	printf("Sample format: %d (%s)\n", params->format, buf);
 
-	SwrContext* swr = nullptr;
-	swr_alloc_set_opts2(
+	SwrContext* swr = NULL;
+
+	ret = swr_alloc_set_opts2(
 		&swr,
 		&codec_ctx->ch_layout, AV_SAMPLE_FMT_FLT, codec_ctx->sample_rate,
 		&codec_ctx->ch_layout, codec_ctx->sample_fmt, codec_ctx->sample_rate,
 		0, NULL
 	);
-	swr_init(swr);
+	if (!swr) {
+		show_error_box("swr_alloc_set_opts2");
+		return false;
+	}
+
+	ret = swr_init(swr);
+	if (ret < 0) {
+		show_error_box("swr_init");
+		return false;
+	}
 
 	std::vector<float> output_samples, sample_buf;
 
 	AVFrame* frame = av_frame_alloc();
+
 	AVPacket* packet = av_packet_alloc();
 	while (av_read_frame(format_ctx, packet) >= 0) {
 		if (packet->stream_index != stream_index) {
@@ -93,19 +111,18 @@ bool FileIO::read(AudioBuffer& buffer, const std::string& path) {
 		avcodec_send_packet(codec_ctx, packet);
 
 		for (;;) {
-			int ret = avcodec_receive_frame(codec_ctx, frame);
+			ret = avcodec_receive_frame(codec_ctx, frame);
 
 			if (ret == AVERROR(EAGAIN) || ret == AVERROR_EOF)
 				break;
 
 			int num_samples = swr_get_out_samples(swr, frame->nb_samples);
-			if (num_samples * 2 > sample_buf.size()) {
+			if (num_samples * 2 > sample_buf.size())
 				sample_buf.resize(num_samples * 2);
-			}
 
 			uint8_t* arr[1] = {(uint8_t*) sample_buf.data()};
 
-			int num_decoded = swr_convert(
+			int num_converted = swr_convert(
 				swr,
 				arr,
 				num_samples,
@@ -113,17 +130,18 @@ bool FileIO::read(AudioBuffer& buffer, const std::string& path) {
 				frame->nb_samples
 			);
 
-			if (num_decoded < 0) {
-				show_error_box("error while decoding audio");
-				return false;
+			if (num_converted < 0) {
+				std::cout << ret << std::endl;
+				char buf[AV_ERROR_MAX_STRING_SIZE];
+				av_strerror(ret, buf, sizeof(buf));
+				std::cout << buf << std::endl;
+				show_error_box("failed to convert");
 			}
-
-			//std::cout << "appending " << num_decoded << " samples\n";
 
 			output_samples.insert(
 				output_samples.end(),
 				sample_buf.begin(),
-				sample_buf.begin() + num_decoded * 2
+				sample_buf.begin() + num_converted * 2
 			);
 		}
 
@@ -142,7 +160,47 @@ bool FileIO::read(AudioBuffer& buffer, const std::string& path) {
 	return true;
 }
 
+static void print_swr_options() {
+    const AVOption *opt = NULL;
+    // Use swr_get_class() to get the AVClass for SwrContext
+    const AVClass *swr_class = swr_get_class();
+
+    printf("Available SwrContext Options:\n");
+    // Pass NULL as the first argument to start from the beginning
+    while ((opt = av_opt_next(&swr_class, opt))) {
+        // Skip constants/unit entries (they usually have no help text or type)
+        if (opt->type == AV_OPT_TYPE_CONST) continue;
+        
+        printf("Name: %-20s | Help: %s\n", opt->name, opt->help ? opt->help : "N/A");
+    }
+}
+
+
+static void print_swr_current_values(SwrContext *swr) {
+    const AVOption *opt = NULL;
+    
+    printf("%-20s | %-20s\n", "Option Name", "Current Value");
+    printf("----------------------------------------------------\n");
+
+    // Pass the pointer to your swr instance
+    while ((opt = av_opt_next(swr, opt))) {
+        // Skip constants/unit names (e.g., individual channel names)
+        if (opt->type == AV_OPT_TYPE_CONST) continue;
+
+        uint8_t *val = NULL;
+        // Retrieve the value as a string
+        if (av_opt_get(swr, opt->name, 0, &val) >= 0) {
+            printf("%-20s | %-20s\n", opt->name, val);
+            
+            // IMPORTANT: av_opt_get allocates memory that you must free
+            av_free(val);
+        }
+    }
+}
+
 bool FileIO::write(const AudioBuffer& buffer, const std::string& path, int format) {
+	int ret;
+
 	AVFormatContext* format_ctx = nullptr;
 
 	avformat_alloc_output_context2(&format_ctx, NULL, NULL, path.c_str());
@@ -163,8 +221,8 @@ bool FileIO::write(const AudioBuffer& buffer, const std::string& path, int forma
 	// TODO: avcodec_get_supported_config()
 
 	codec_ctx->bit_rate = 192000;
-	codec_ctx->sample_rate = 44100;
-	codec_ctx->sample_fmt = AV_SAMPLE_FMT_FLT;
+	codec_ctx->sample_rate = buffer.get_sample_rate();
+	codec_ctx->sample_fmt = AV_SAMPLE_FMT_FLTP;
 	av_channel_layout_default(&codec_ctx->ch_layout, 2);
 	codec_ctx->strict_std_compliance = FF_COMPLIANCE_EXPERIMENTAL;
 
@@ -175,14 +233,25 @@ bool FileIO::write(const AudioBuffer& buffer, const std::string& path, int forma
 
 	avcodec_parameters_from_context(stream->codecpar, codec_ctx);
 
-	SwrContext* swr_ctx = nullptr;
+	SwrContext* swr = nullptr;
 	swr_alloc_set_opts2(
-		&swr_ctx,
-		&codec_ctx->ch_layout, codec_ctx->sample_fmt, codec_ctx->sample_rate,
-		&codec_ctx->ch_layout, AV_SAMPLE_FMT_FLT, codec_ctx->sample_rate,
-		0, NULL
+		&swr,
+
+		&codec_ctx->ch_layout,
+		codec_ctx->sample_fmt,
+		codec_ctx->sample_rate,
+
+		&codec_ctx->ch_layout,
+		AV_SAMPLE_FMT_FLT,
+		codec_ctx->sample_rate,
+
+		0,
+		NULL
 	);
-	swr_init(swr_ctx);
+	swr_init(swr);
+
+	print_swr_options();
+	print_swr_current_values(swr);
 
 	if (~format_ctx->oformat->flags & AVFMT_NOFILE) {
 		if (avio_open(&format_ctx->pb, path.c_str(), AVIO_FLAG_WRITE) < 0) {
@@ -196,36 +265,49 @@ bool FileIO::write(const AudioBuffer& buffer, const std::string& path, int forma
 		return false;
 	}
 
-	int frame_size = codec_ctx->frame_size;
-	std::cout << "MP3 frame size = " << frame_size << std::endl;
+	AVFrame* frame = av_frame_alloc();
+	frame->format = AV_SAMPLE_FMT_FLTP;
+	frame->nb_samples = codec_ctx->frame_size;
+	frame->sample_rate = buffer.get_sample_rate();
+	frame->ch_layout = codec_ctx->ch_layout;
 
-	AVFrame* input_frame = av_frame_alloc();
-	input_frame->nb_samples = frame_size;
-	input_frame->format = AV_SAMPLE_FMT_FLT;
-	av_channel_layout_copy(&input_frame->ch_layout, &codec_ctx->ch_layout);
-	av_frame_get_buffer(input_frame, 0);
-
-	AVFrame* encode_frame = av_frame_alloc();
-	encode_frame->nb_samples = frame_size;
-	encode_frame->format = AV_SAMPLE_FMT_FLT;
-	av_channel_layout_copy(&encode_frame->ch_layout, &codec_ctx->ch_layout);
-	av_frame_get_buffer(encode_frame, 0);
+	ret = av_frame_get_buffer(frame, 0);
+	assert(ret >= 0);
 
 	AVPacket* packet = av_packet_alloc();
 
 	const float* samples = buffer.get_samples().data();
-	int64_t num_frames = buffer.get_num_frames();
-	int64_t pts = 0;
-	int64_t samples_written = 0;
+	int num_frames = buffer.get_num_frames();
+	int pts = 0;
 
-	while (samples_written < num_frames) {
-		av_frame_make_writable(input_frame);
-		swr_convert_frame(swr_ctx, encode_frame, input_frame);
+	while (pts < num_frames) {
+		av_frame_make_writable(frame);
 
-		encode_frame->pts = pts;
-		pts += encode_frame->nb_samples;
+		int remaining = num_frames - pts;
+		int write_count = std::min(remaining, frame->nb_samples);
 
-		if (avcodec_send_frame(codec_ctx, input_frame) < 0) {
+		const uint8_t* in_arr[1] = {
+			(const uint8_t*) (samples + pts * 2)
+		};
+
+		ret = swr_convert(
+			swr,
+			frame->data,
+			frame->nb_samples,
+			in_arr,
+			write_count
+		);
+
+		if (ret < 0) {
+			print_error_msg(ret);
+			show_error_box("swr_convert_frame");
+			return false;
+		}
+
+		frame->pts = pts;
+		pts += write_count;
+
+		if (avcodec_send_frame(codec_ctx, frame) < 0) {
 			show_error_box("error sending frame to encoder");
 			return false;
 		}
@@ -246,9 +328,12 @@ bool FileIO::write(const AudioBuffer& buffer, const std::string& path, int forma
 				return false;
 			}
 		}
-
-		samples_written += frame_size;
 	}
 
+	av_frame_free(&frame);
+	av_packet_free(&packet);
+	swr_free(&swr);
+	avcodec_free_context(&codec_ctx);
+	avformat_close_input(&format_ctx);
 	return true;
 }
