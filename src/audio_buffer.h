@@ -11,7 +11,6 @@ public:
 
     void init(int num_channels, int sample_rate, std::vector<float>&& samples = {});
     bool load_from_file(const QString& path);
-    bool save_to_file(const QString& path);
     void sample_amplitude(int channel, int64_t start, int64_t end, float& out_max, float& out_min) const;
     bool delete_region(int64_t start, int64_t end);
     void insert_silence(int64_t where, int64_t num_frames);

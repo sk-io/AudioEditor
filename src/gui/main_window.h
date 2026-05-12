@@ -59,6 +59,7 @@ private:
     void on_change();
     void dragEnterEvent(QDragEnterEvent *e);
     void dropEvent(QDropEvent *e);
+	void save();
 
 public:
     Ui::MainWindow* ui;

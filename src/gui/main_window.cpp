@@ -119,8 +119,7 @@ void MainWindow::on_actionSave_triggered() {
         return;
     }
 
-    the_app.buffer.save_to_file(the_app.file_path);
-    the_app.unsaved_changes = false;
+	save();
     update_title();
 }
 
@@ -132,8 +131,8 @@ void MainWindow::on_actionSave_as_triggered() {
     QFileInfo info(path);
     the_app.file_path = path;
     the_app.last_dir = info.dir().path();
-    the_app.buffer.save_to_file(the_app.file_path);
-    the_app.unsaved_changes = false;
+
+	save();
     update_title();
 }
 
@@ -354,4 +353,30 @@ void MainWindow::dropEvent(QDropEvent* event) {
 
     QString path = event->mimeData()->urls()[0].toLocalFile();
     load_from_file(path);
+}
+
+void MainWindow::save() {
+	int codec = -1;
+
+	const QString& path = the_app.file_path;
+
+	// TODO: let user choose this if they want to
+    QFileInfo file_info(path);
+    QString suffix = file_info.completeSuffix();
+    if (suffix == "wav") {
+		codec = AV_CODEC_ID_PCM_S16LE;
+    } else if (suffix == "mp3") {
+		codec = AV_CODEC_ID_MP3;
+    } else if (suffix == "ogg") {
+		codec = AV_CODEC_ID_VORBIS;
+    } else {
+		show_error_box("could not determine codec from filename");
+		return;
+	}
+
+    if (the_app.io.write(the_app.buffer, path.toStdString(), codec)) {
+		the_app.unsaved_changes = false;
+	} else {
+		show_error_box("error when saving to file: [error message]");
+	}
 }

@@ -41,7 +41,6 @@ void undo_state() {
 
 void show_error_box(const QString& msg) {
     qDebug() << "ERROR: " << msg;
-	exit(1);
     QMessageBox box;
     box.critical(the_app.main_window, "Error", msg);
 }
