@@ -77,13 +77,23 @@ MainWindow::~MainWindow() {
 }
 
 void MainWindow::update_status_bar() {
-    // TODO: reorganize
-    QString str =
-        QString("Length: %1s %3Hz")
-        .arg(the_app.buffer.get_duration())
-        .arg(the_app.buffer.get_sample_rate());
-    m_file_info->setText(str);
-    m_mouse_info->setText(QString("Time: %1s").arg(m_audio_widget->get_mouse_pos()));
+	double total_duration = the_app.buffer.get_duration();
+	double mouse_time = m_audio_widget->get_mouse_pos();
+	int64_t total_frames = the_app.buffer.get_num_frames();
+	int64_t mouse_frame = mouse_time / total_duration * total_frames;
+	int sample_rate = the_app.buffer.get_sample_rate();
+	QString bit_depth_str = "32-bit float"; // TODO
+
+	m_file_info->setText(
+        QString("%1s %2Hz %3")
+		.arg(QString::number(total_duration, 'f', 2))
+        .arg(sample_rate)
+        .arg(bit_depth_str)
+	);
+
+    m_mouse_info->setText(QString("Time %1s")
+		.arg(QString::number(mouse_time, 'f', 2))
+	);
 }
 
 void MainWindow::on_actionNew_triggered() {

@@ -352,20 +352,19 @@ bool AudioWidget::event(QEvent* event) {
 
         m_mouse_x = mouse->pos().x() - rect().left();
         m_mouse_pos = m_scroll_pos + m_mouse_x / m_pixels_per_second;
-        m_mouse_pos = std::max(m_mouse_pos, 0.0);
-        m_mouse_pos = std::min(m_mouse_pos, the_app.buffer.get_duration());
+		double clamped_mouse_pos = the_app.buffer.clamp_time(m_mouse_pos);
 
         if (m_state == State::SCROLLING) {
             m_scroll_pos = m_drag_start_scroll_pos - (m_mouse_x - m_drag_start_mouse_x) / m_pixels_per_second;
             update();
         } else if (m_state == State::SELECTING) {
-            m_selection_pos_b = m_mouse_pos;
+            m_selection_pos_b = clamped_mouse_pos;
             update();
         } else if (m_state == State::RESIZE_REGION) {
             if (m_resizing_a)
-                m_selection_pos_a = m_mouse_pos;
+                m_selection_pos_a = clamped_mouse_pos;
             else
-                m_selection_pos_b = m_mouse_pos;
+                m_selection_pos_b = clamped_mouse_pos;
             update();
         } else {
             if (m_selection_state == SelectionState::REGION) {
@@ -394,6 +393,7 @@ bool AudioWidget::event(QEvent* event) {
     if (event->type() == QEvent::MouseButtonPress || event->type() == QEvent::MouseButtonRelease) {
         bool pressed = event->type() == QEvent::MouseButtonPress;
         QMouseEvent* mouse = (QMouseEvent*) event;
+		double clamped_mouse_pos = the_app.buffer.clamp_time(m_mouse_pos);
 
         if (mouse->button() == Qt::RightButton && pressed && m_state == State::IDLE) {
             m_state = State::SCROLLING;
@@ -404,8 +404,8 @@ bool AudioWidget::event(QEvent* event) {
         } else if (mouse->button() == Qt::LeftButton && pressed && m_state == State::IDLE) {
             m_state = State::SELECTING;
             m_selection_state = SelectionState::REGION;
-            m_selection_pos_a = m_mouse_pos;
-            m_selection_pos_b = m_mouse_pos;
+            m_selection_pos_a = clamped_mouse_pos;
+            m_selection_pos_b = clamped_mouse_pos;
         } else if (mouse->button() == Qt::LeftButton && !pressed && m_state == State::SELECTING) {
             m_state = State::IDLE;
 
@@ -447,10 +447,6 @@ bool AudioWidget::event(QEvent* event) {
             double scroll_max = old_scroll_right_pos - new_width_seconds;
 
             m_scroll_pos = old_scroll_pos + (scroll_max - old_scroll_pos) * lerp_val;
-
-            //double pixels_per_sample = (m_pixels_per_second / (double) the_app.buffer.get_sample_rate());
-            //qDebug() << "pixels/sample: " << pixels_per_sample << "samples/pixel: " << 1.0 / pixels_per_sample;
-
             update();
         }
 

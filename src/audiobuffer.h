@@ -42,6 +42,10 @@ public:
 		return std::max((int64_t) 0, std::min(m_num_frames - 1, frame));
 	}
 
+	double clamp_time(double time) const {
+		return std::max(0.0, std::min(m_total_duration, time));
+	}
+
 private:
     void on_length_changed();
 

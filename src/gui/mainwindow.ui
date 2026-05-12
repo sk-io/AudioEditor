@@ -22,17 +22,27 @@
      <x>0</x>
      <y>0</y>
      <width>800</width>
-     <height>21</height>
+     <height>23</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
     <property name="title">
      <string>File</string>
     </property>
+    <widget class="QMenu" name="menuRecent_Files">
+     <property name="title">
+      <string>Recent Files</string>
+     </property>
+     <addaction name="actionClear"/>
+    </widget>
     <addaction name="actionNew"/>
     <addaction name="actionOpen"/>
     <addaction name="actionSave"/>
     <addaction name="actionSave_as"/>
+    <addaction name="separator"/>
+    <addaction name="menuRecent_Files"/>
+    <addaction name="separator"/>
+    <addaction name="actionQuit"/>
    </widget>
    <widget class="QMenu" name="menuEdit">
     <property name="title">
@@ -67,9 +77,57 @@
     <addaction name="menuChange_View"/>
     <addaction name="actionResetView"/>
    </widget>
+   <widget class="QMenu" name="menuFormat">
+    <property name="title">
+     <string>Format</string>
+    </property>
+    <widget class="QMenu" name="menuQuality">
+     <property name="title">
+      <string>Quality</string>
+     </property>
+     <addaction name="actionLow"/>
+     <addaction name="actionMedium"/>
+     <addaction name="actionHigh"/>
+     <addaction name="actionExtreme"/>
+     <addaction name="actionCustom"/>
+    </widget>
+    <widget class="QMenu" name="menuSample_Rate">
+     <property name="title">
+      <string>Sample Rate</string>
+     </property>
+     <addaction name="action8_kHz"/>
+     <addaction name="action16_kHz"/>
+     <addaction name="action22_05_kHz"/>
+     <addaction name="action44_1_kHz"/>
+     <addaction name="action48_kHz"/>
+     <addaction name="actionCustom_2"/>
+    </widget>
+    <widget class="QMenu" name="menuChannels">
+     <property name="title">
+      <string>Channels</string>
+     </property>
+     <addaction name="actionConvert_to_Mono"/>
+     <addaction name="actionConvert_to_Stereo"/>
+    </widget>
+    <widget class="QMenu" name="menuBit_Depth">
+     <property name="title">
+      <string>Bit Depth</string>
+     </property>
+     <addaction name="action8_bit"/>
+     <addaction name="action16_bit"/>
+     <addaction name="action24_bit"/>
+     <addaction name="action32_bit"/>
+     <addaction name="action32_bit_float"/>
+    </widget>
+    <addaction name="menuQuality"/>
+    <addaction name="menuSample_Rate"/>
+    <addaction name="menuChannels"/>
+    <addaction name="menuBit_Depth"/>
+   </widget>
    <addaction name="menuFile"/>
    <addaction name="menuEdit"/>
    <addaction name="menuView"/>
+   <addaction name="menuFormat"/>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
   <widget class="QToolBar" name="toolBar">
@@ -292,6 +350,106 @@
    </property>
    <property name="menuRole">
     <enum>QAction::MenuRole::NoRole</enum>
+   </property>
+  </action>
+  <action name="actionLow">
+   <property name="text">
+    <string>Low</string>
+   </property>
+  </action>
+  <action name="actionMedium">
+   <property name="text">
+    <string>Medium</string>
+   </property>
+  </action>
+  <action name="actionHigh">
+   <property name="text">
+    <string>High</string>
+   </property>
+  </action>
+  <action name="actionExtreme">
+   <property name="text">
+    <string>Extreme</string>
+   </property>
+  </action>
+  <action name="actionCustom">
+   <property name="text">
+    <string>Custom..</string>
+   </property>
+  </action>
+  <action name="action8_kHz">
+   <property name="text">
+    <string>8 kHz</string>
+   </property>
+  </action>
+  <action name="action16_kHz">
+   <property name="text">
+    <string>16 kHz</string>
+   </property>
+  </action>
+  <action name="action22_05_kHz">
+   <property name="text">
+    <string>22.05 kHz</string>
+   </property>
+  </action>
+  <action name="action44_1_kHz">
+   <property name="text">
+    <string>44.1 kHz</string>
+   </property>
+  </action>
+  <action name="action48_kHz">
+   <property name="text">
+    <string>48 kHz</string>
+   </property>
+  </action>
+  <action name="actionCustom_2">
+   <property name="text">
+    <string>Custom..</string>
+   </property>
+  </action>
+  <action name="actionConvert_to_Mono">
+   <property name="text">
+    <string>Convert to Mono..</string>
+   </property>
+  </action>
+  <action name="actionConvert_to_Stereo">
+   <property name="text">
+    <string>Convert to Stereo..</string>
+   </property>
+  </action>
+  <action name="action8_bit">
+   <property name="text">
+    <string>8-bit</string>
+   </property>
+  </action>
+  <action name="action16_bit">
+   <property name="text">
+    <string>16-bit</string>
+   </property>
+  </action>
+  <action name="action24_bit">
+   <property name="text">
+    <string>24-bit</string>
+   </property>
+  </action>
+  <action name="action32_bit">
+   <property name="text">
+    <string>32-bit</string>
+   </property>
+  </action>
+  <action name="action32_bit_float">
+   <property name="text">
+    <string>32-bit float</string>
+   </property>
+  </action>
+  <action name="actionQuit">
+   <property name="text">
+    <string>Quit</string>
+   </property>
+  </action>
+  <action name="actionClear">
+   <property name="text">
+    <string>Clear</string>
    </property>
   </action>
  </widget>
