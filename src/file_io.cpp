@@ -6,13 +6,6 @@
 #include <stdlib.h>
 #include <stdint.h>
 
-extern "C" {
-#include <libavcodec/avcodec.h>
-#include <libavformat/avformat.h>
-#include <libswresample/swresample.h>
-#include <libavutil/channel_layout.h>
-#include <libavutil/opt.h>
-}
 
 #include <iostream>
 #include <algorithm>

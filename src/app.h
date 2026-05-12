@@ -4,7 +4,6 @@
 #include "audio_interface.h"
 #include "waveform_cache.h"
 #include "file_io.h"
-
 #include <QString>
 
 class MainWindow;

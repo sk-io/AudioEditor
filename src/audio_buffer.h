@@ -1,5 +1,6 @@
 #pragma once
 
+#include "ffmpeg_wrapper.h"
 #include <vector>
 #include <stdint.h>
 #include <QString>
@@ -49,7 +50,8 @@ private:
     void on_length_changed();
 
 private:
-    std::vector<float> m_samples; // stereo has 2 floats per sample, interleaved
+    std::vector<float> m_samples;
+	int m_sample_format = AV_SAMPLE_FMT_FLT;
     int64_t m_num_frames = 0;
     int m_sample_rate = -1;
     int m_num_channels = -1;
