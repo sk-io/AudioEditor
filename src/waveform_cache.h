@@ -1,5 +1,4 @@
-#ifndef WAVEFORMVISUAL_H
-#define WAVEFORMVISUAL_H
+#pragma once
 
 #include <vector>
 #include <cstdint>
@@ -32,5 +31,3 @@ private:
     const int num_levels = 2; // TODO: allow user to adjust?
     int num_channels = 0;
 };
-
-#endif // WAVEFORMVISUAL_H

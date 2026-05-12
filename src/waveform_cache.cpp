@@ -1,4 +1,4 @@
-#include "waveformvisual.h"
+#include "waveform_cache.h"
 
 #include "app.h"
 #include <math.h>

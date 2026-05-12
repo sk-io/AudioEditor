@@ -1,5 +1,4 @@
-#ifndef AUDIOINTERFACE_H
-#define AUDIOINTERFACE_H
+#pragma once
 
 #include <stdint.h>
 #include <portaudio.h>
@@ -46,5 +45,3 @@ private:
     friend class MainWindow;
     friend class AudioWidget;
 };
-
-#endif // AUDIOINTERFACE_H

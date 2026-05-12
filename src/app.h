@@ -1,9 +1,8 @@
-#ifndef APP_H
-#define APP_H
+#pragma once
 
-#include "audiobuffer.h"
-#include "audiointerface.h"
-#include "waveformvisual.h"
+#include "audio_buffer.h"
+#include "audio_interface.h"
+#include "waveform_cache.h"
 #include "file_io.h"
 
 #include <QString>
@@ -29,5 +28,3 @@ int run_app(int argc, char* argv[]);
 void save_state();
 void undo_state();
 void show_error_box(const QString& msg);
-
-#endif // APP_H

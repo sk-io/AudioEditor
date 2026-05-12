@@ -1,5 +1,4 @@
-#ifndef AUDIOWIDGET_H
-#define AUDIOWIDGET_H
+#pragma once
 
 #include <QWidget>
 
@@ -68,5 +67,3 @@ private:
 
     friend class MainWindow;
 };
-
-#endif // AUDIOWIDGET_H

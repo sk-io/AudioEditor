@@ -1,7 +1,7 @@
-#include "audiowidget.h"
-#include "../app.h"
-#include "mainwindow.h"
+#include "audio_widget.h"
 
+#include "../app.h"
+#include "main_window.h"
 #include <QPainter>
 #include <QEvent>
 #include <QMouseEvent>

@@ -1,7 +1,6 @@
-#ifndef MAINWINDOW_H
-#define MAINWINDOW_H
+#pragma once
 
-#include "audiowidget.h"
+#include "audio_widget.h"
 
 #include <QMainWindow>
 #include <QLabel>
@@ -67,5 +66,3 @@ public:
     QLabel* m_mouse_info;
     AudioWidget* m_audio_widget;
 };
-
-#endif // MAINWINDOW_H

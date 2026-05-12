@@ -1,6 +1,6 @@
-#include "mainwindow.h"
-#include "ui_mainwindow.h"
-#include "audiowidget.h"
+#include "main_window.h"
+#include "ui_main_window.h"
+#include "audio_widget.h"
 #include "../app.h"
 
 #include <QFileDialog>

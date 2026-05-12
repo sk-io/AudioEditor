@@ -1,11 +1,10 @@
-#include "audiointerface.h"
+#include "audio_interface.h"
 
+#include "gui/main_window.h"
 #include "app.h"
 #include <QtGlobal>
 #include <qlogging.h>
 #include <QDebug>
-#include "gui/mainwindow.h"
-
 
 int playback_callback(const void* input_buf, void* output_buf,
                              unsigned long num_frames, const PaStreamCallbackTimeInfo* time_info,

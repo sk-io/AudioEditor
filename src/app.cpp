@@ -1,6 +1,6 @@
 #include "app.h"
 
-#include "gui/mainwindow.h"
+#include "gui/main_window.h"
 #include <QApplication>
 #include <QDir>
 #include <QMessageBox>

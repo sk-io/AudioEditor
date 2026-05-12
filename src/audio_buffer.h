@@ -1,5 +1,4 @@
-#ifndef AUDIOBUFFER_H
-#define AUDIOBUFFER_H
+#pragma once
 
 #include <vector>
 #include <stdint.h>
@@ -56,5 +55,3 @@ private:
     int m_num_channels = -1;
     double m_total_duration = -1;
 };
-
-#endif // AUDIOBUFFER_H

@@ -1,10 +1,11 @@
-#include "audiobuffer.h"
+#include "audio_buffer.h"
+
 #include "app.h"
-#include <stdint.h>
-#include <algorithm>
 #include <QFileInfo>
 #include <QtGlobal>
 #include <qlogging.h>
+#include <stdint.h>
+#include <algorithm>
 
 AudioBuffer::AudioBuffer() {}
 
@@ -30,13 +31,10 @@ bool AudioBuffer::save_to_file(const QString& path) {
     if (suffix == "wav") {
     } else if (suffix == "mp3") {
     } else if (suffix == "ogg") {
-    } else {
-		qDebug() << "cant determine output format";
-        Q_ASSERT(false);
     }
 	*/
 
-    return the_app.io.write(*this, path.toStdString(), FileIO::FORMAT_MP3);
+    return the_app.io.write(*this, path.toStdString(), 0);
 }
 
 void AudioBuffer::sample_amplitude(int channel, int64_t start, int64_t end, float& out_max, float& out_min) const {

@@ -22,23 +22,23 @@ add_executable(AudioEditor
     src/main.cpp
     src/app.h
     src/app.cpp
-    src/audiobuffer.h
-    src/audiobuffer.cpp
-    src/audiointerface.h
-    src/audiointerface.cpp
-    src/waveformvisual.h
-    src/waveformvisual.cpp
+    src/audio_buffer.h
+    src/audio_buffer.cpp
+    src/audio_interface.h
+    src/audio_interface.cpp
+    src/waveform_cache.h
+    src/waveform_cache.cpp
     src/file_io.h
     src/file_io.cpp
-    src/gui/mainwindow.cpp
-    src/gui/mainwindow.h
-    src/gui/audiowidget.h
-    src/gui/audiowidget.cpp
+    src/gui/main_window.cpp
+    src/gui/main_window.h
+    src/gui/audio_widget.h
+    src/gui/audio_widget.cpp
     src/gui/settings.h
     src/gui/settings.cpp
 
     # ui files
-    src/gui/mainwindow.ui
+    src/gui/main_window.ui
     src/gui/settings.ui
 
     # resource files
